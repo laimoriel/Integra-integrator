@@ -7,7 +7,6 @@ uint8_t * outputNumbers;
 
 
 // Handle dynamic content in panel.html view:
-// In case we just generated and dispatched a frame to Integra we display full code of the frame (MESSAGE)
 // And we always generate tables to visualize states of inputs/zones/outputs based on the config files.
 String processorIntegra(const String & var) {
   char type = var[0];
@@ -88,7 +87,6 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
   while (file.available()) {
     // Read corresponding config file line by line and split each line according to expected pattern as described above
     numberStr = file.readStringUntil(':');
-    //number = atoi(numberStr.c_str());
     name = file.readStringUntil('\n');
     name.trim();
     table += "\n<tr><td>" + name + "</td>";
@@ -110,6 +108,9 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
 }
 
 
+
+// Generate HTML to display tables which visualize statistics of received frames.
+// We can always change the list of frames we're interested in so they need to be created dynamically.
 String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * counter)
 {
   String tableRow = "<tr><td>Code: </td>";
@@ -126,6 +127,8 @@ String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * c
 }
 
 
+// Generate list of inputs/zones/outputs which are stored in the config
+// Only for diagnostic purposes
 String generateNumbersList(uint8_t * numbers, uint8_t count) {
   String list = "<p>";
   for (uint8_t i = 0; i < count; i++) {
