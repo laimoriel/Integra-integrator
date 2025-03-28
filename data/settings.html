@@ -1,0 +1,159 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TCP2UART</title>
+	<link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+	<table>
+		<tr>
+			<td colspan="2">
+				<a href="/panel"> PANEL </a>&nbsp&nbsp
+				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
+				<a href="/stats"> STATS </a>&nbsp&nbsp
+				<a href="/settings"> SETTINGS </a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<h4>WiFi settings</h4>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<form action = "/settingsget">
+					<label for="ssid">SSID:</label><br/>
+					<input type="text" id="ssid" name="ssid" maxlength="32" value="%SSID%"><br/><br/>
+					<label for="pass">Password:</label><br/>
+					<input type="text" id="pass" name="pass" maxlength="64"><br/><br/>
+					<input type="submit" value="Submit"><br/>
+				</form><br/>
+            </td>
+        </tr>
+		<tr>
+			<td colspan="2">
+				<form action = "/settingsget">
+					<label for="phone">Phone number:</label><br/>
+					<input type="text" id="phone" name="phone" maxlength="16" value="%PHONE%"><br/><br/>
+					<label for="apikey">API Key:</label><br/>
+					<input type="text" id="apikey" name="apikey" maxlength="16"><br/><br/>
+					<input type="submit" value="Submit"><br/>
+				</form><br/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+				<h4>Port 1 settings</h4>
+				<p>
+					Port: %PORT1%<br/> 
+					Baud: %BPS1%<br/>
+					Mode: %MODE1%<br/>
+				</p>
+			</td>
+            <td>
+				<h4>Port 2 settings</h4>
+				<p>
+					Port: %PORT2%<br/> 
+					Baud: %BPS2%<br/>
+					Mode: %MODE2%<br/>
+				</p>
+			</td>
+        </tr>
+        <tr>
+			<td>
+				<br/><br/>
+				<form action = "/settingsget">
+					<label for="port_1">TCP port:</label>
+					<input type="number" id="port_1" " name="port_1" min="1024" max="65535" value="%PORT1%"><br/><br/>
+					<label for="bps_1">Baud rate:</label>
+					<select id="bps_1" name="bps_1">
+						<option value="1200">1200</option>
+						<option value="2400">2400</option>
+						<option value="4800">4800</option>
+						<option value="9600">9600</option>
+						<option value="19200">19200</option>
+						<option value="38400">38400</option>
+						<option value="57600">57600</option>
+						<option value="115200">115200</option>
+					</select><br/><br/>
+					<label for="mode_1">Mode:</label>
+					<select id="mode_1" name="mode_1">
+						<option value="16">5N1</option>
+						<option value="48">5N2</option>
+						<option value="18">5E1</option>
+						<option value="50">5E2</option>
+						<option value="19">5O1</option>
+						<option value="51">5O2</option>
+						<option value="20">6N1</option>
+						<option value="52">6N2</option>
+						<option value="22">6E1</option>
+						<option value="54">6E2</option>
+						<option value="23">6O1</option>
+						<option value="55">6O2</option>
+						<option value="24">7N1</option>
+						<option value="56">7N2</option>
+						<option value="26">7E1</option>
+						<option value="58">7E2</option>
+						<option value="27">7O1</option>
+						<option value="59">7O2</option>
+						<option value="28">8N1</option>
+						<option value="60">8N2</option>
+						<option value="30">8E1</option>
+						<option value="62">8E2</option>
+						<option value="31">8O1</option>
+						<option value="63">8O2</option>
+					</select><br/><br/>
+					<input type="submit" value="Submit"><br/>
+				</form><br/><br/>
+            </td>
+            <td>
+				<br/><br/>
+				<form action = "/settingsget">
+					<label for="port_2">TCP port:</label>
+					<input type="number" id="port_2" " name="port_2" min="1024" max="65535" value="%PORT2%"><br/><br/>
+					<label for="bps_2">Baud rate:</label>
+					<select id="bps_2" name="bps_2">
+						<option value="1200">1200</option>
+						<option value="2400">2400</option>
+						<option value="4800">4800</option>
+						<option value="9600">9600</option>
+						<option value="19200">19200</option>
+						<option value="38400">38400</option>
+						<option value="57600">57600</option>
+						<option value="115200">115200</option>
+					</select><br/><br/>
+					<label for="mode_2">Mode:</label>
+					<select id="mode_2" name="mode_2">
+						<option value="16">5N1</option>
+						<option value="48">5N2</option>
+						<option value="18">5E1</option>
+						<option value="50">5E2</option>
+						<option value="19">5O1</option>
+						<option value="51">5O2</option>
+						<option value="20">6N1</option>
+						<option value="52">6N2</option>
+						<option value="22">6E1</option>
+						<option value="54">6E2</option>
+						<option value="23">6O1</option>
+						<option value="55">6O2</option>
+						<option value="24">7N1</option>
+						<option value="56">7N2</option>
+						<option value="26">7E1</option>
+						<option value="58">7E2</option>
+						<option value="27">7O1</option>
+						<option value="59">7O2</option>
+						<option value="28">8N1</option>
+						<option value="60">8N2</option>
+						<option value="30">8E1</option>
+						<option value="62">8E2</option>
+						<option value="31">8O1</option>
+						<option value="63">8O2</option>
+					</select><br/><br/>
+					<input type="submit" value="Submit"><br/>
+				</form><br/><br/>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

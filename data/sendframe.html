@@ -1,0 +1,35 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TCP2UART</title>
+	<link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+	<table>
+		<tr>
+			<td>
+				<a href="/panel"> PANEL </a>&nbsp&nbsp
+				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
+				<a href="/stats"> STATS </a>&nbsp&nbsp
+				<a href="/settings"> SETTINGS </a>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Send HEX to UART</h4>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Send any payload</h4>
+				<form action = "/sendframeget">
+					<input type="text" id="message" name="message" size="32" maxlength="64"><br/><br/>
+					<input type="submit" value="Submit"><br/>
+				</form><br/>
+            </td>
+		</tr>
+
+    </table>
+  </body>
+</html>

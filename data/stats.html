@@ -1,0 +1,69 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TCP2UART</title>
+	<link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+	<table>
+		<tr>
+			<td>
+				<a href="/panel"> PANEL </a>&nbsp&nbsp
+				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
+				<a href="/stats"> STATS </a>&nbsp&nbsp
+				<a href="/settings"> SETTINGS </a>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Some statistics</h4>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Monitored inputs:</h4>
+				%INPUTS%
+				<h4>Monitored zones:</h4>
+				%ZONES%
+				<h4>Monitored outputs:</h4>
+				%OUTPUTS%
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Input / output bytes</h4>
+				<table>
+					<tr><td></td><td>IN</td><td>OUT</td><td>Read Pos</td><td>Write Pos</td></tr>
+					<tr><td>Port 1</td><td>%PORT1IN%</td><td>%PORT1OUT%</td><td>%READPOS1%</td><td>%WRITEPOS1%</td></tr>
+					<tr><td>Port 2</td><td>%PORT2IN%</td><td>%PORT2OUT%</td><td>%READPOS2%</td><td>%WRITEPOS2%</td></tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Received input frames</h4>
+				<table>
+					%INPUTFRAMETABLE%
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Received zone frames</h4>
+				<table>
+					%ZONEFRAMETABLE%
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h4>Received output frames</h4>
+				<table>
+					%OUTPUTFRAMETABLE%
+				</table>
+			</td>
+		</tr>
+    </table>
+  </body>
+</html>
