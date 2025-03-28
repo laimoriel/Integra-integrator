@@ -13,6 +13,8 @@ The project was created with 2 main areas of functionality:
    * Device was tested with Integra 32 central unit and INT-KLCD manipulator, but it should also work with other Integra series central units.
      
 Hardware setup is simple and cheap. Requires only ESP32, some level converter from TTL to RS232 (possibly MAX232) and a 5V power source.
+In my setup the device supports 2 serial ports simultaneously: ESP32 can handle up to 3 UARTS, while a single MAX232 provides 2 bidirectional channels.
+So I connect to RS232 on central unit (for DLOADX) and RS232 on KLCD (for integration) in parallell.
 
 Setup of the device is quite simple. 
 By default device will initially start in AP mode. You need to connect to the AP, open http://192.168.1.1 in browser, enter settings webpage and configure credentials of your WLAN.
