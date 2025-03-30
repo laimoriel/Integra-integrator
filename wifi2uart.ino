@@ -64,9 +64,7 @@ void readEEPROMConfig(void) {
 }
 
 
-// Some arrays can only be created and initialized AFTER we read the main config:
-// - how many inputs, zones and outputs are in the supported system.
-// Afterwards we need to initialize them accordingly.
+
 void tablesInit(void) {
   extern uint8_t numInputs;
   extern uint8_t numZones;
