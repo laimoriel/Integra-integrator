@@ -89,7 +89,7 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
     numberStr = file.readStringUntil(':');
     name = file.readStringUntil('\n');
     name.trim();
-    table += "\n<tr><td>" + name + "</td>";
+    table += "\n<tr><th>" + name + "</th>";
     for (uint8_t i = 0; i < columns; i++) {
       char code[5];
       char output;
@@ -113,14 +113,14 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
 // We can always change the list of frames we're interested in so they need to be created dynamically.
 String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * counter)
 {
-  String tableRow = "<tr><td>Code: </td>";
+  String tableRow = "<tr><th>Code: </th>";
   for (uint8_t i = 0; i < numCells; i++) {
     char code[5];
     sprintf(code, "0x%.2X", codes[i]);
     code[4] = '\0';
-    tableRow += "<td>" + String(code) + "</td>";
+    tableRow += "<th>" + String(code) + "</th>";
   }
-  tableRow += "</tr>\n<tr><td>Count: </td>";
+  tableRow += "</tr>\n<tr><th>Count: </th>";
   for (uint8_t i = 0; i < numCells; i++) tableRow += "<td>" + String(counter[i]) + "</td>";
   tableRow += "</tr>\n";
   return tableRow;

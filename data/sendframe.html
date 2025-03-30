@@ -6,9 +6,9 @@
 	<link rel="stylesheet" href="style.css">
   </head>
   <body>
-	<table>
+	<table class="outertable">
 		<tr>
-			<td>
+			<td class="outertd">
 				<a href="/panel"> PANEL </a>&nbsp&nbsp
 				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
 				<a href="/stats"> STATS </a>&nbsp&nbsp
@@ -16,12 +16,12 @@
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td class="outertd">
 				<h4>Send HEX to UART</h4>
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td class="outertd">
 				<h4>Send any payload</h4>
 				<form action = "/sendframeget">
 					<input type="text" id="message" name="message" size="32" maxlength="64"><br/><br/>

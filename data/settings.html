@@ -6,9 +6,9 @@
 	<link rel="stylesheet" href="style.css">
   </head>
   <body>
-	<table>
+	<table class="outertable">
 		<tr>
-			<td colspan="2">
+			<td colspan="2"  class="outertd">
 				<a href="/panel"> PANEL </a>&nbsp&nbsp
 				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
 				<a href="/stats"> STATS </a>&nbsp&nbsp
@@ -16,12 +16,8 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="2">
+			<td colspan="2"  class="outertd">
 				<h4>WiFi settings</h4>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2">
 				<form action = "/settingsget">
 					<label for="ssid">SSID:</label><br/>
 					<input type="text" id="ssid" name="ssid" maxlength="32" value="%SSID%"><br/><br/>
@@ -32,7 +28,8 @@
             </td>
         </tr>
 		<tr>
-			<td colspan="2">
+			<td colspan="2"  class="outertd">
+				<h4>WhatsApp credentials</h4>
 				<form action = "/settingsget">
 					<label for="phone">Phone number:</label><br/>
 					<input type="text" id="phone" name="phone" maxlength="16" value="%PHONE%"><br/><br/>
@@ -43,7 +40,7 @@
             </td>
         </tr>
         <tr>
-            <td>
+            <td class="outertd">
 				<h4>Port 1 settings</h4>
 				<p>
 					Port: %PORT1%<br/> 
@@ -51,7 +48,7 @@
 					Mode: %MODE1%<br/>
 				</p>
 			</td>
-            <td>
+            <td class="outertd">
 				<h4>Port 2 settings</h4>
 				<p>
 					Port: %PORT2%<br/> 
@@ -61,7 +58,7 @@
 			</td>
         </tr>
         <tr>
-			<td>
+			<td class="outertd">
 				<br/><br/>
 				<form action = "/settingsget">
 					<label for="port_1">TCP port:</label>
@@ -107,7 +104,7 @@
 					<input type="submit" value="Submit"><br/>
 				</form><br/><br/>
             </td>
-            <td>
+            <td class="outertd">
 				<br/><br/>
 				<form action = "/settingsget">
 					<label for="port_2">TCP port:</label>

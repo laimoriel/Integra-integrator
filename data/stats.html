@@ -6,9 +6,9 @@
 	<link rel="stylesheet" href="style.css">
   </head>
   <body>
-	<table>
+	<table class="outertable">
 		<tr>
-			<td>
+			<td class="outertd">
 				<a href="/panel"> PANEL </a>&nbsp&nbsp
 				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
 				<a href="/stats"> STATS </a>&nbsp&nbsp
@@ -16,12 +16,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td>
-				<h4>Some statistics</h4>
-			</td>
-		</tr>
-		<tr>
-			<td>
+			<td  class="outertd">
 				<h4>Monitored inputs:</h4>
 				%INPUTS%
 				<h4>Monitored zones:</h4>
@@ -31,35 +26,35 @@
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td  class="outertd">
 				<h4>Input / output bytes</h4>
-				<table>
-					<tr><td></td><td>IN</td><td>OUT</td><td>Read Pos</td><td>Write Pos</td></tr>
-					<tr><td>Port 1</td><td>%PORT1IN%</td><td>%PORT1OUT%</td><td>%READPOS1%</td><td>%WRITEPOS1%</td></tr>
-					<tr><td>Port 2</td><td>%PORT2IN%</td><td>%PORT2OUT%</td><td>%READPOS2%</td><td>%WRITEPOS2%</td></tr>
+				<table class="innertable">
+					<tr><th></th><th>IN</th><th>OUT</th><th>Read Pos</th><th>Write Pos</th></tr>
+					<tr><th>Port 1</th><td>%PORT1IN%</td><td>%PORT1OUT%</td><td>%READPOS1%</td><td>%WRITEPOS1%</td></tr>
+					<tr><th>Port 2</th><td>%PORT2IN%</td><td>%PORT2OUT%</td><td>%READPOS2%</td><td>%WRITEPOS2%</td></tr>
 				</table>
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td  class="outertd">
 				<h4>Received input frames</h4>
-				<table>
+				<table class="innertable">
 					%INPUTFRAMETABLE%
 				</table>
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td  class="outertd">
 				<h4>Received zone frames</h4>
-				<table>
+				<table class="innertable">
 					%ZONEFRAMETABLE%
 				</table>
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td  class="outertd">
 				<h4>Received output frames</h4>
-				<table>
+				<table class="innertable">
 					%OUTPUTFRAMETABLE%
 				</table>
 			</td>
