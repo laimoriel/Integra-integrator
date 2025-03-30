@@ -13,15 +13,15 @@ String processorIntegra(const String & var) {
   extern uint8_t * inputsStates;
   extern uint8_t * zonesStates;
   extern uint8_t * outputsStates; 
-  if (var == "TABLEINPUTS") return generateStatesTable("/inputs.cfg", sizeof(inputFrameCodes), 'i', inputsStates);
-  if (var == "TABLEZONES") return generateStatesTable("/zones.cfg", sizeof(zoneFrameCodes), 'z', zonesStates);
-  if (var == "TABLEOUTPUTS") return generateStatesTable("/outputs.cfg", sizeof(outputFrameCodes), 'o', outputsStates);
+  if (var == "TABLEINPUTS") return generateStatesTable("/integra_inputs.cfg", sizeof(inputFrameCodes), 'i', inputsStates);
+  if (var == "TABLEZONES") return generateStatesTable("/integra_zones.cfg", sizeof(zoneFrameCodes), 'z', zonesStates);
+  if (var == "TABLEOUTPUTS") return generateStatesTable("/integra_outputs.cfg", sizeof(outputFrameCodes), 'o', outputsStates);
   if (var == "ZONESFORM") {
     String form = "";
     String name = "";
     String numberStr = "";
     uint8_t number = 0;
-    File file = LittleFS.open("/zones.cfg", "r");
+    File file = LittleFS.open("/integra_zones.cfg", "r");
     if (!file) return "File not found";
     while (file.available()) {
       numberStr = file.readStringUntil(':');
@@ -52,10 +52,7 @@ String processorStats(const String & var) {
   extern uint8_t * inputNumbers;
   extern uint8_t * zoneNumbers;
   extern uint8_t * outputNumbers; 
-  if (var == "INPUTS") return generateNumbersList(inputNumbers, numInputs);
-  else if (var == "ZONES") return generateNumbersList(zoneNumbers, numZones);
-  else if (var == "OUTPUTS") return generateNumbersList(outputNumbers, numOutputs);
-  else if (var == "PORT1IN") return String(bytesIn[0]);
+  if (var == "PORT1IN") return String(bytesIn[0]);
   else if (var == "PORT1OUT") return String(bytesOut[0]);
   else if (var == "PORT2IN") return String(bytesIn[1]);
   else if (var == "PORT2OUT") return String(bytesOut[1]);
@@ -66,6 +63,9 @@ String processorStats(const String & var) {
   else if (var == "INPUTFRAMETABLE") return generateFramesTable(sizeof(inputFrameCodes), inputFrameCodes, inputFramesCtr);
   else if (var == "ZONEFRAMETABLE") return generateFramesTable(sizeof(zoneFrameCodes), zoneFrameCodes, zoneFramesCtr);
   else if (var == "OUTPUTFRAMETABLE") return generateFramesTable(sizeof(outputFrameCodes), outputFrameCodes, outputFramesCtr);
+  else if (var == "INPUTS") return generateNumbersTable("/integra_inputs.cfg", "Inputs");
+  else if (var == "ZONES") return generateNumbersTable("/integra_zones.cfg", "Zones");
+  else if (var == "OUTPUTS") return generateNumbersTable("/integra_outputs.cfg", "Outputs");
   else return "n/a";
 }
 
@@ -81,7 +81,7 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
   String numberStr = "";
   uint8_t number = 0;
   String name = "";
-  String table = "";
+  String output = "";
   File file = LittleFS.open(filename, "r");
   if (!file) return "File not found";
   while (file.available()) {
@@ -89,24 +89,23 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
     numberStr = file.readStringUntil(':');
     name = file.readStringUntil('\n');
     name.trim();
-    table += "\n<tr><th>" + name + "</th>";
+    output += "\n<tr><th>" + name + "</th>";
     for (uint8_t i = 0; i < columns; i++) {
       char code[5];
-      char output;
+      char state;
       // This is the actual generation of cell IDs
       sprintf(code, "%c%.2d%d\0", type, number, i);
       // And here is generation of the according <td id=...> HTML code
-      if ((states[number] >> i) & 0x01 != 0) output = '#'; else output = ' ';
-      table += "<td id=\"" + String(code) +"\">" + String(output) +"</td>" ;
+      if ((states[number] >> i) & 0x01 != 0) state = '#'; else state = ' ';
+      output += "<td id=\"" + String(code) + "\">" + String(state) +"</td>" ;
     }
-    table += "</tr>";
+    output += "</tr>";
     number++;
   }
-  table += "\n";
+  output += "\n";
   file.close();
-  return table;
+  return output;
 }
-
 
 
 // Generate HTML to display tables which visualize statistics of received frames.
@@ -129,14 +128,25 @@ String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * c
 
 // Generate list of inputs/zones/outputs which are stored in the config
 // Only for diagnostic purposes
-String generateNumbersList(uint8_t * numbers, uint8_t count) {
-  String list = "<p>";
-  for (uint8_t i = 0; i < count; i++) {
-    list += String(numbers[i]) + ", ";
+String generateNumbersTable(String filename, String header) {
+  String numberStr = "";
+  String name = "";
+  String output = "";
+  output += "<tr><th colspan=\"2\">" + header + "</th>" ;
+  File file = LittleFS.open(filename, "r");
+  if (!file) return "File not found";
+  while (file.available()) {
+    // Read corresponding config file line by line and split each line according to expected pattern as described above
+    numberStr = file.readStringUntil(':');
+    name = file.readStringUntil('\n');
+    name.trim();
+    output += "\n<tr><th>" + numberStr + "</th><td>" + name + "</td></tr>";
   }
-  list += "</p>";
-  return list;
+  output += "\n";
+  file.close();
+  return output;
 }
+
 
 
 // Dispatch a notification to all connected clients via WebSocket.
@@ -173,7 +183,7 @@ void notifyWhatsApp(uint8_t i, uint8_t state, uint8_t oldstate) {
   String name = "";
   uint8_t number = 0;
   uint8_t change = state ^ oldstate;
-  File file = LittleFS.open("/zones.cfg", "r");
+  File file = LittleFS.open("/integra_zones.cfg", "r");
   while (file.available()) {
     numberStr = file.readStringUntil(':');
     number = atoi(numberStr.c_str());

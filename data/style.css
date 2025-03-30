@@ -42,9 +42,15 @@ td 	{
 	}
 .outertable {
 	}
+.silenttable {
+	border: none;
+	}
 .innertd {
 	}
 .outertd {
+	}
+.silenttd {
+	border: none;
 	}
 .tdrot {
 	writing-mode: vertical-rl;

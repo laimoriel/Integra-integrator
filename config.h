@@ -80,6 +80,6 @@ String processorSettings(const String &);
 String processorStats(const String &);
 String generateStatesTable(String, uint8_t, char, uint8_t *);
 String generateFramesTable(uint8_t, const uint8_t *, uint32_t *);
-String generateNumbersList(uint8_t *, uint8_t);
-String mode2code(uint16_t);
+String generateSelectForm(String, uint32_t);
+String generateNumbersTable(String, String);
 

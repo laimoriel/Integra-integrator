@@ -10,6 +10,7 @@ String apiKey;
 // TCP socket ports
 uint16_t port_1;
 uint16_t port_2;
+uint8_t port_mirroring;
 // UART ports paramaeters
 uint32_t bps_1;
 uint32_t bps_2;
@@ -81,13 +82,13 @@ void tablesInit(void) {
   extern uint32_t * zoneFramesCtr;
   extern uint32_t * outputFramesCtr;
 
-  File file = LittleFS.open("/inputs.cfg", "r");  
+  File file = LittleFS.open("/integra_inputs.cfg", "r");  
   while (file.available()) {file.readStringUntil('\n'); numInputs++;}
   file.close();
-  file = LittleFS.open("/zones.cfg", "r");
+  file = LittleFS.open("/integra_zones.cfg", "r");
   while (file.available()) {file.readStringUntil('\n'); numZones++;}
   file.close();
-  file = LittleFS.open("/outputs.cfg", "r"); 
+  file = LittleFS.open("/integra_outputs.cfg", "r"); 
   while (file.available()) { file.readStringUntil('\n'); numOutputs++;}
   file.close();
 
@@ -108,7 +109,7 @@ void tablesInit(void) {
   inputNumbers = (uint8_t*) malloc(numInputs * sizeof(uint8_t));
   zoneNumbers = (uint8_t*) malloc(numZones * sizeof(uint8_t));
   outputNumbers = (uint8_t*) malloc(numOutputs * sizeof(uint8_t));
-  file = LittleFS.open("/inputs.cfg", "r");  
+  file = LittleFS.open("/integra_inputs.cfg", "r");  
   uint8_t i = 0;
   while (file.available()) {
     String numberStr = file.readStringUntil(':');
@@ -117,7 +118,7 @@ void tablesInit(void) {
     file.readStringUntil('\n');
   }
   file.close();
-  file = LittleFS.open("/zones.cfg", "r");  
+  file = LittleFS.open("/integra_zones.cfg", "r");  
   i = 0;
   while (file.available()) {
     String numberStr = file.readStringUntil(':');
@@ -126,7 +127,7 @@ void tablesInit(void) {
     file.readStringUntil('\n');
   }
   file.close();
-  file = LittleFS.open("/outputs.cfg", "r");  
+  file = LittleFS.open("/integra_outputs.cfg", "r");  
   i = 0;
   while (file.available()) {
     String numberStr = file.readStringUntil(':');
