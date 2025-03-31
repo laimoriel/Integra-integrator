@@ -12,6 +12,7 @@ void handleParamSettings(String const &name, String const &value) {
   extern uint32_t bps_2;
   extern uint8_t mode_1;
   extern uint8_t mode_2;
+  extern uint8_t port_mirroring;
   if (name == "port_1") {
     port_1 = value.toInt(); 
     EEPROM.write(0, port_1);
@@ -49,6 +50,18 @@ void handleParamSettings(String const &name, String const &value) {
     EEPROM.write(9, mode_2);
     EEPROM.commit();
     uartInit();
+  }
+  if (name == "mirror_1") {
+    if (value == "1") port_mirroring |= 0x01;
+    else port_mirroring &= 0xFE;
+    EEPROM.write(10, port_mirroring);
+    EEPROM.commit();
+  }
+  if (name == "mirror_2") {
+    if (value == "1") port_mirroring |= 0x02;
+    else port_mirroring &= 0xFD;
+    EEPROM.write(10, port_mirroring);
+    EEPROM.commit();
   }
   if (name == "ssid") {
     ssidClient = value;
@@ -89,6 +102,7 @@ String processorSettings(const String & var) {
   extern uint32_t bps_2;
   extern uint8_t mode_1;
   extern uint8_t mode_2;
+  extern uint8_t port_mirroring;
   if (var == "SSID") return ssidClient;
   else if (var == "PORT1") return String(port_1);
   else if (var == "PORT2") return String(port_2);
@@ -96,6 +110,8 @@ String processorSettings(const String & var) {
   else if (var == "BPSTABLE2") return generateSelectForm("/uart_baudrates.cfg", bps_2);
   else if (var == "MODETABLE1") return generateSelectForm("/uart_modes.cfg", mode_1);
   else if (var == "MODETABLE2") return generateSelectForm("/uart_modes.cfg", mode_2);
+  else if (var == "MIRROR1") return (port_mirroring & 0x01) ? "checked" : "";
+  else if (var == "MIRROR2") return (port_mirroring & 0x02) ? "checked" : "";
   else if (var == "PHONE") return String(phoneNumber);
   else return "n/a";
 }

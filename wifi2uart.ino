@@ -10,7 +10,7 @@ String apiKey;
 // TCP socket ports
 uint16_t port_1;
 uint16_t port_2;
-uint8_t port_mirroring;
+uint8_t port_mirroring = 0;
 // UART ports paramaeters
 uint32_t bps_1;
 uint32_t bps_2;
@@ -58,6 +58,7 @@ void readEEPROMConfig(void) {
   bps_2 = EEPROM.read(7) << 8;
   mode_1 = EEPROM.read(8);
   mode_2 = EEPROM.read(9);
+  port_mirroring = EEPROM.read(10);
   ssidClient = EEPROM.readString(EEPROM_SSID_OFFSET);
   passClient = EEPROM.readString(EEPROM_SSID_OFFSET + ssidClient.length() + 1);
   phoneNumber = EEPROM.readString(EEPROM_SSID_OFFSET + ssidClient.length() + passClient.length() + 2);
@@ -250,7 +251,8 @@ void connectionHandler(void *pvParameters) {
 void port1Handler(void *pvParameters) {
   while (1) {
     TCP2COM(0);
-    COM2TCP(0, SERIAL1_MIRRORING);
+    uint8_t listen = port_mirroring & 0x01;
+    COM2TCP(0, listen);
     delay(10);
   }
 }
@@ -260,7 +262,8 @@ void port1Handler(void *pvParameters) {
 void port2Handler(void *pvParameters) {
   while(1) {
     TCP2COM(1);
-    COM2TCP(1, SERIAL2_MIRRORING);
+    uint8_t listen = (port_mirroring & 0x02) > 1;
+    COM2TCP(1, listen);
     delay(10);
   }
 }
