@@ -52,6 +52,7 @@ void handleGetSendFrame(AsyncWebServerRequest *);
 void handleGetPanel(AsyncWebServerRequest *);
 void handleParamSettings(String const &, String const &);
 void notFound(AsyncWebServerRequest *);
+void onEvent(AsyncWebSocket *, AsyncWebSocketClient *, AwsEventType, void *, uint8_t *, size_t);
 
 // Receive and decode frames from Integra
 void integraRxHandler(void *);

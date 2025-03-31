@@ -61,8 +61,26 @@ void notFound(AsyncWebServerRequest *request) {
 }
 
 
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+  switch (type) {
+    case WS_EVT_CONNECT:
+      ws.cleanupClients(3);
+      break;
+    case WS_EVT_DISCONNECT:
+      break;
+    case WS_EVT_DATA:
+      //handleWebSocketMessage(arg, data, len);
+      break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+      break;
+  }
+}
+
+
 // Init websocket for sending updates on state of the system to web browser
 void initWebSocket(void) {
+  ws.onEvent(onEvent);
   server.addHandler(&ws);
 }
 
