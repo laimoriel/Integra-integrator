@@ -1,12 +1,17 @@
- <!DOCTYPE html>
- <html>
- <head>
+<!DOCTYPE html>
+<html>
+<head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-title" content="Integra-tor">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="manifest" href="/manifest.json">
+	<link rel="icon" type="image/png" href="/integra-tor.png">
     <title>TCP2UART</title>
 	<link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-  <script>
+</head>
+<body>
+<script>
 	var gateway = `ws://${window.location.hostname}/ws`;
 	var websocket;
 	window.addEventListener('load', onLoad);
@@ -56,84 +61,88 @@
 	{
 		initWebSocket();
 	}
-	</script>
-	<table class="outertable">
-		<tr>
-			<td class="outertd">
-				<a href="/panel"> PANEL </a>&nbsp&nbsp
-				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
-				<a href="/stats"> STATS </a>&nbsp&nbsp
-				<a href="/settings"> SETTINGS </a>
-			</td>
-		</tr>
-		<tr>
-			<td class="outertd">
-				<h4>Uzbrojenie i rozbrojenie</h4>
-				<form action = "/panelget">
-					<label for="mode">Akcja: </label><br/>
-					<select id="mode" name="mode">
-						<option value="1">Uzbroj</option>
-						<option value="0">Rozbroj</option>
-						<option value="2">Wyczysc alarm</option>
-					</select><br/><br/>
-					<label for="zone">Strefa: </label><br/>
-					<select id="zone" name="zone">
-						%ZONESFORM%
-					</select><br/><br/>
-					<label for="password">Password: </label><br/>
-					<input type="number" step="1" id="password" name="password" size="10" maxlength="16"><br/><br/><br/>
-					<input type="submit" value="Submit" id="button"><br/>
-				</form><br/>
-			</td>
-		</tr>
-		<tr>
-			<td class="outertd">
-				<h4>Stan stref</h4>
-				<table class="innertable">
-					<tr>
-						<th>Strefa</th>
-						<td class="tdrot">Czuwanie</td>
-						<td class="tdrot">Czas wejscia</td>
-						<td class="tdrot">Czas wyjscia</td>
-						<td class="tdrot">Czas wyjscia < 10s</td>
-						<td class="tdrot">Alarm</td>
-						<td class="tdrot">Alarm ppoz.</td>
-						<td class="tdrot">Pamiec alarmu</td>
-						<td class="tdrot">Pamiec alarmu ppoz.</td>
-					</tr>
-					%TABLEZONES%
-				</table>
-			</td>
-		</tr>
-		<tr>
-			<td class="outertd">
-				<h4>Stan wejsc</h4>
-				<table class="innertable">
-					<tr>
-						<th>Czujnik</th>
-						<td class="tdrot">Naruszenie</td>
-						<td class="tdrot">Sabotaz</td>
-						<td class="tdrot">Alarm</td>
-						<td class="tdrot">Alarm Sabotaz</td>
-						<td class="tdrot">Pamiec alarmu</td>
-						<td class="tdrot">Pamiec sabotazu</td>
-					</tr>
-					%TABLEINPUTS%
-				</table>
-			</td>
-		</tr>
-		<tr>
-			<td class="outertd">
-				<h4>Stan wyjsc</h4>
-				<table class="innertable">
-					<tr>
-						<th>Wyjscie</th>
-						<td class="tdrot">Stan</td>
-					</tr>
-					%TABLEOUTPUTS%
-				</table>
-			</td>
-		</tr>
-    </table>
-  </body>
+</script>
+<table class="outertable">
+	<tr>
+		<td class="outertd">
+			<table class="silenttable">
+				<tr>
+					<td class="silenttd"><a href="/panel">PANEL</a></td>
+					<td class="silenttd"><a href="/stats">STATS</a></td>
+					<td class="silenttd"><a href="/sendframe">SENDFRAME</a></td>
+					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Uzbrojenie i rozbrojenie</h4>
+			<form action = "/panelget">
+				<label for="mode">Akcja: </label><br/>
+				<select id="mode" name="mode">
+					<option value="1">Uzbroj</option>
+					<option value="0">Rozbroj</option>
+					<option value="2">Wyczysc alarm</option>
+				</select><br/><br/>
+				<label for="zone">Strefa: </label><br/>
+				<select id="zone" name="zone">
+					%ZONESFORM%
+				</select><br/><br/>
+				<label for="password">Password: </label><br/>
+				<input type="number" step="1" id="password" name="password" size="10" maxlength="16"><br/><br/><br/>
+				<input type="submit" value="Submit" id="button"><br/>
+			</form><br/>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Stan stref</h4>
+			<table class="innertable">
+				<tr>
+					<th>Strefa</th>
+					<td class="tdrot">Czuwanie</td>
+					<td class="tdrot">Czas wejscia</td>
+					<td class="tdrot">Czas wyjscia</td>
+					<td class="tdrot">Czas wyjscia < 10s</td>
+					<td class="tdrot">Alarm</td>
+					<td class="tdrot">Alarm ppoz.</td>
+					<td class="tdrot">Pamiec alarmu</td>
+					<td class="tdrot">Pamiec alarmu ppoz.</td>
+				</tr>
+				%TABLEZONES%
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Stan wejsc</h4>
+			<table class="innertable">
+				<tr>
+					<th>Czujnik</th>
+					<td class="tdrot">Naruszenie</td>
+					<td class="tdrot">Sabotaz</td>
+					<td class="tdrot">Alarm</td>
+					<td class="tdrot">Alarm Sabotaz</td>
+					<td class="tdrot">Pamiec alarmu</td>
+					<td class="tdrot">Pamiec sabotazu</td>
+				</tr>
+				%TABLEINPUTS%
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Stan wyjsc</h4>
+			<table class="innertable">
+				<tr>
+					<th>Wyjscie</th>
+					<td class="tdrot">Stan</td>
+				</tr>
+				%TABLEOUTPUTS%
+			</table>
+		</td>
+	</tr>
+</table>
+</body>
 </html>

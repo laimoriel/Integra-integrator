@@ -63,6 +63,8 @@ td 	{
 	}
 .outertd {
 	border: 1px solid #808080;
+	margin: 5px;
+	padding: 10px;
 	}
 .silenttd {
 	border: none;
@@ -70,7 +72,7 @@ td 	{
 .tdrot {
 	text-orientation: mixed;
 	writing-mode: vertical-rl;
-	width: 20px;
+	width: 15px;
 	border: 2px solid #8080FF;
 	background-color: #BAC8F5;
 	}	
@@ -106,8 +108,8 @@ a:link, a:visited {
 	text-align: center;
 	vertical-align: center;
 	text-decoration: none;
-	margin: 5px;
-	padding: 5px;
+	margin: 3px;
+	padding: 3px;
 	color: black;
 	background-color: #BAC8F5;
 	border: 2px solid #8080FF;

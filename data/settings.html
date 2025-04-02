@@ -1,86 +1,95 @@
- <!DOCTYPE html>
- <html>
- <head>
+<!DOCTYPE html>
+<html>
+<head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-title" content="Integra-tor">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="manifest" href="/manifest.json">
+	<link rel="icon" type="image/png" href="/integra-tor.png">
     <title>TCP2UART</title>
 	<link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-	<table class="outertable">
-		<tr>
-			<td colspan="2"  class="outertd">
-				<a href="/panel"> PANEL </a>&nbsp&nbsp
-				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
-				<a href="/stats"> STATS </a>&nbsp&nbsp
-				<a href="/settings"> SETTINGS </a>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2"  class="outertd">
-				<h4>WiFi settings</h4>
-				<form id="wifiform" action = "/settingsget">
-					<label for="ssid">SSID:</label><br/>
-					<input type="text" id="ssid" name="ssid" maxlength="32" value="%SSID%"><br/><br/>
-					<label for="pass">Password:</label><br/>
-					<input type="text" id="pass" name="pass" maxlength="64"><br/><br/><br/>
-					<input type="submit" value="Submit"><br/>
-				</form><br/>
-            </td>
-        </tr>
-		<tr>
-			<td colspan="2"  class="outertd">
-				<h4>WhatsApp credentials</h4>
-				<form id="phoneform" action = "/settingsget">
-					<label for="phone">Phone number:</label><br/>
-					<input type="text" id="phone" name="phone" maxlength="16" value="%PHONE%"><br/><br/>
-					<label for="apikey">API Key:</label><br/>
-					<input type="text" id="apikey" name="apikey" maxlength="16"><br/><br/><br/>
-					<input type="submit" value="Submit"><br/>
-				</form><br/>
-            </td>
-        </tr>
-        <tr>
-			<td class="outertd">
-				<br/><br/>
-				<form id="port1form" action="/settingsget">
-					<label for="port_1">TCP port:</label>
-					<input type="number" id="port_1" " name="port_1" min="1024" max="65535" value="%PORT1%"><br/><br/>
-					<label for="bps_1">Baud rate:</label>
-					<select id="bps_1" name="bps_1">
-						%BPSTABLE1%
-					</select><br/><br/>
-					<label for="mode_1">Mode:</label>
-					<select id="mode_1" name="mode_1">
-						%MODETABLE1%
-					</select><br/><br/>
-					<label for="mirror_1">Process input:</label>
-					<input id='mirror_1' type='checkbox' value='1' name='mirror_1' %MIRROR1%><br/><br/>
-					<input id='mirror_1_hidden' type='hidden' value='0' name='mirror_1'>
-					<input type="submit" value="Submit"><br/>
-				</form><br/><br/>
-            </td>
-            <td class="outertd">
-				<br/><br/>
-				<form action = "/settingsget" id="port2form">
-					<label for="port_2">TCP port:</label>
-					<input type="number" id="port_2" " name="port_2" min="1024" max="65535" value="%PORT2%"><br/><br/>
-					<label for="bps_2">Baud rate:</label>
-					<select id="bps_2" name="bps_2">
-						%BPSTABLE2%
-					</select><br/><br/>
-					<label for="mode_2">Mode:</label>
-					<select id="mode_2" name="mode_2">
-						%MODETABLE2%
-					</select><br/><br/>
-					<label for="mirror_2">Process input:</label>
-					<input id='mirror_2' type='checkbox' value='1' name='mirror_2' %MIRROR2%><br/><br/>
-					<input id='mirror_2_hidden' type='hidden' value='0' name='mirror_2'>
-					<input type="submit" value="Submit"><br/>
-				</form><br/><br/>
-            </td>
-        </tr>
-    </table>
-	<script>
+</head>
+<body>
+<table class="outertable">
+	<tr>
+		<td colspan="2"  class="outertd">
+			<table class="silenttable">
+				<tr>
+					<td class="silenttd"><a href="/panel">PANEL</a></td>
+					<td class="silenttd"><a href="/stats">STATS</a></td>
+					<td class="silenttd"><a href="/sendframe">SENDFRAME</a></td>
+					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2"  class="outertd">
+			<h4>WiFi settings</h4>
+			<form id="wifiform" action = "/settingsget">
+				<label for="ssid">SSID:</label><br/>
+				<input type="text" id="ssid" name="ssid" maxlength="32" value="%SSID%"><br/><br/>
+				<label for="pass">Password:</label><br/>
+				<input type="text" id="pass" name="pass" maxlength="64"><br/><br/><br/>
+				<input type="submit" value="Submit"><br/>
+			</form><br/>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2"  class="outertd">
+			<h4>WhatsApp credentials</h4>
+			<form id="phoneform" action = "/settingsget">
+				<label for="phone">Phone number:</label><br/>
+				<input type="text" id="phone" name="phone" maxlength="16" value="%PHONE%"><br/><br/>
+				<label for="apikey">API Key:</label><br/>
+				<input type="text" id="apikey" name="apikey" maxlength="16"><br/><br/><br/>
+				<input type="submit" value="Submit"><br/>
+			</form><br/>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<br/><br/>
+			<form id="port1form" action="/settingsget">
+				<label for="port_1">TCP port:</label>
+				<input type="number" id="port_1" " name="port_1" min="1024" max="65535" value="%PORT1%"><br/><br/>
+				<label for="bps_1">Baud rate:</label>
+				<select id="bps_1" name="bps_1">
+				%BPSTABLE1%
+				</select><br/><br/>
+				<label for="mode_1">Mode:</label>
+				<select id="mode_1" name="mode_1">
+				%MODETABLE1%
+				</select><br/><br/>
+				<label for="mirror_1">Process input:</label>
+				<input id='mirror_1' type='checkbox' value='1' name='mirror_1' %MIRROR1%><br/><br/>
+				<input id='mirror_1_hidden' type='hidden' value='0' name='mirror_1'>
+				<input type="submit" value="Submit"><br/>
+			</form><br/><br/>
+		</td>
+		<td class="outertd">
+			<br/><br/>
+			<form action = "/settingsget" id="port2form">
+				<label for="port_2">TCP port:</label>
+				<input type="number" id="port_2" " name="port_2" min="1024" max="65535" value="%PORT2%"><br/><br/>
+				<label for="bps_2">Baud rate:</label>
+				<select id="bps_2" name="bps_2">
+				%BPSTABLE2%
+				</select><br/><br/>
+				<label for="mode_2">Mode:</label>
+				<select id="mode_2" name="mode_2">
+				%MODETABLE2%
+				</select><br/><br/>
+				<label for="mirror_2">Process input:</label>
+				<input id='mirror_2' type='checkbox' value='1' name='mirror_2' %MIRROR2%><br/><br/>
+				<input id='mirror_2_hidden' type='hidden' value='0' name='mirror_2'>
+				<input type="submit" value="Submit"><br/>
+			</form><br/><br/>
+		</td>
+	</tr>
+</table>
+<script>
 	const form1 = document.getElementById('port1form');
 	form1.addEventListener('submit', () => {
 	  if(document.getElementById('mirror_1').checked) {
@@ -94,6 +103,6 @@
 	  }
 	});
 
-	</script>
-  </body>
+</script>
+</body>
 </html>

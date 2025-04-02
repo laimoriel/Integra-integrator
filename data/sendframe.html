@@ -2,29 +2,37 @@
  <html>
  <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TCP2UART</title>
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-title" content="Integra-tor">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="manifest" href="/manifest.json">
+	<link rel="icon" type="image/png" href="/integra-tor.png">
+	<title>TCP2UART</title>
 	<link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-	<table class="outertable">
-		<tr>
-			<td class="outertd">
-				<a href="/panel"> PANEL </a>&nbsp&nbsp
-				<a href="/sendframe"> SENDFRAME </a>&nbsp&nbsp
-				<a href="/stats"> STATS </a>&nbsp&nbsp
-				<a href="/settings"> SETTINGS </a>
-			</td>
-		</tr>
-		<tr>
-			<td class="outertd">
-				<h4>Send any payload</h4>
-				<form action = "/sendframeget">
-					<input type="text" id="message" name="message" size="32" maxlength="64"><br/><br/><br/>
-					<input type="submit" value="Submit"><br/>
-				</form><br/>
-            </td>
-		</tr>
-
-    </table>
-  </body>
+</head>
+<body>
+<table class="outertable">
+	<tr>
+		<td class="outertd">
+			<table class="silenttable">
+				<tr>
+					<td class="silenttd"><a href="/panel">PANEL</a></td>
+					<td class="silenttd"><a href="/stats">STATS</a></td>
+					<td class="silenttd"><a href="/sendframe">SENDFRAME</a></td>
+					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Send any payload</h4>
+			<form action = "/sendframeget">
+				<input type="text" id="message" name="message" size="32" maxlength="64"><br/><br/><br/>
+				<input type="submit" value="Submit"><br/>
+			</form><br/>
+		</td>
+	</tr>
+</table>
+</body>
 </html>

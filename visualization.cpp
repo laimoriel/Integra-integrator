@@ -112,7 +112,7 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
 // We can always change the list of frames we're interested in so they need to be created dynamically.
 String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * counter)
 {
-  String tableRow = "<tr><th>Code: </th>";
+  String tableRow = "\n<tr><th>Code: </th>";
   for (uint8_t i = 0; i < numCells; i++) {
     char code[5];
     sprintf(code, "0x%.2X", codes[i]);
@@ -121,7 +121,7 @@ String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * c
   }
   tableRow += "</tr>\n<tr><th>Count: </th>";
   for (uint8_t i = 0; i < numCells; i++) tableRow += "<td>" + String(counter[i]) + "</td>";
-  tableRow += "</tr>\n";
+  tableRow += "</tr>";
   return tableRow;
 }
 
@@ -132,7 +132,7 @@ String generateNumbersTable(String filename, String header) {
   String numberStr = "";
   String name = "";
   String output = "";
-  output += "<tr><th colspan=\"2\">" + header + "</th>" ;
+  output += "\n<tr><th colspan=\"2\">" + header + "</th>" ;
   File file = LittleFS.open(filename, "r");
   if (!file) return "File not found";
   while (file.available()) {
