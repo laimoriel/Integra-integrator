@@ -41,8 +41,6 @@ String processorIntegra(const String & var) {
 String processorStats(const String & var) {
   extern uint32_t bytesIn[2];
   extern uint32_t bytesOut[2];
-  extern uint32_t readPos[2];
-  extern uint32_t writePos[2];
   extern uint32_t * inputFramesCtr;
   extern uint32_t * zoneFramesCtr;
   extern uint32_t * outputFramesCtr;
@@ -56,10 +54,6 @@ String processorStats(const String & var) {
   else if (var == "PORT1OUT") return String(bytesOut[0]);
   else if (var == "PORT2IN") return String(bytesIn[1]);
   else if (var == "PORT2OUT") return String(bytesOut[1]);
-  else if (var == "READPOS1") return String(readPos[0]);
-  else if (var == "WRITEPOS1") return String(writePos[0]);
-  else if (var == "READPOS2") return String(readPos[1]);
-  else if (var == "WRITEPOS2") return String(writePos[1]);
   else if (var == "INPUTFRAMETABLE") return generateFramesTable(sizeof(inputFrameCodes), inputFrameCodes, inputFramesCtr);
   else if (var == "ZONEFRAMETABLE") return generateFramesTable(sizeof(zoneFrameCodes), zoneFrameCodes, zoneFramesCtr);
   else if (var == "OUTPUTFRAMETABLE") return generateFramesTable(sizeof(outputFrameCodes), outputFrameCodes, outputFramesCtr);
@@ -97,7 +91,7 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
       sprintf(code, "%c%.2d%d\0", type, number, i);
       // And here is generation of the according <td id=...> HTML code
       if ((states[number] >> i) & 0x01 != 0) state = '#'; else state = ' ';
-      output += "<td id=\"" + String(code) + "\">" + String(state) +"</td>" ;
+      output += "<td class=\"innertd\" id=\"" + String(code) + "\">" + String(state) +"</td>" ;
     }
     output += "</tr>";
     number++;
@@ -112,16 +106,13 @@ String generateStatesTable(String filename, uint8_t columns, char type, uint8_t 
 // We can always change the list of frames we're interested in so they need to be created dynamically.
 String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * counter)
 {
-  String tableRow = "\n<tr><th>Code: </th>";
+  String tableRow = "\n<tr><th>Code: </th><th>Count: </th></tr>";
   for (uint8_t i = 0; i < numCells; i++) {
     char code[5];
     sprintf(code, "0x%.2X", codes[i]);
     code[4] = '\0';
-    tableRow += "<th>" + String(code) + "</th>";
+    tableRow += "\n<tr><th>" + String(code) + "</th><td class=\"frametd\">" + String(counter[i]) + "</td></tr>";
   }
-  tableRow += "</tr>\n<tr><th>Count: </th>";
-  for (uint8_t i = 0; i < numCells; i++) tableRow += "<td>" + String(counter[i]) + "</td>";
-  tableRow += "</tr>";
   return tableRow;
 }
 
@@ -140,7 +131,7 @@ String generateNumbersTable(String filename, String header) {
     numberStr = file.readStringUntil(':');
     name = file.readStringUntil('\n');
     name.trim();
-    output += "\n<tr><th>" + numberStr + "</th><td>" + name + "</td></tr>";
+    output += "\n<tr><th>" + numberStr + "</th><td class=\"frametd\">" + name + "</td></tr>";
   }
   output += "\n";
   file.close();

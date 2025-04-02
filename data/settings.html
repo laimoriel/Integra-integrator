@@ -18,7 +18,6 @@
 				<tr>
 					<td class="silenttd"><a href="/panel">PANEL</a></td>
 					<td class="silenttd"><a href="/stats">STATS</a></td>
-					<td class="silenttd"><a href="/sendframe">SENDFRAME</a></td>
 					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
 				</tr>
 			</table>
@@ -52,17 +51,17 @@
 		<td class="outertd">
 			<br/><br/>
 			<form id="port1form" action="/settingsget">
-				<label for="port_1">TCP port:</label>
+				<label for="port_1">TCP port:</label><br/>
 				<input type="number" id="port_1" " name="port_1" min="1024" max="65535" value="%PORT1%"><br/><br/>
-				<label for="bps_1">Baud rate:</label>
+				<label for="bps_1">Baud rate:</label><br/>
 				<select id="bps_1" name="bps_1">
 				%BPSTABLE1%
 				</select><br/><br/>
-				<label for="mode_1">Mode:</label>
+				<label for="mode_1">Mode:</label><br/>
 				<select id="mode_1" name="mode_1">
 				%MODETABLE1%
 				</select><br/><br/>
-				<label for="mirror_1">Process input:</label>
+				<label for="mirror_1">Process input:</label><br/>
 				<input id='mirror_1' type='checkbox' value='1' name='mirror_1' %MIRROR1%><br/><br/>
 				<input id='mirror_1_hidden' type='hidden' value='0' name='mirror_1'>
 				<input type="submit" value="Submit"><br/>
@@ -71,17 +70,17 @@
 		<td class="outertd">
 			<br/><br/>
 			<form action = "/settingsget" id="port2form">
-				<label for="port_2">TCP port:</label>
+				<label for="port_2">TCP port:</label><br/>
 				<input type="number" id="port_2" " name="port_2" min="1024" max="65535" value="%PORT2%"><br/><br/>
-				<label for="bps_2">Baud rate:</label>
+				<label for="bps_2">Baud rate:</label><br/>
 				<select id="bps_2" name="bps_2">
 				%BPSTABLE2%
 				</select><br/><br/>
-				<label for="mode_2">Mode:</label>
+				<label for="mode_2">Mode:</label><br/>
 				<select id="mode_2" name="mode_2">
 				%MODETABLE2%
 				</select><br/><br/>
-				<label for="mirror_2">Process input:</label>
+				<label for="mirror_2">Process input:</label><br/>
 				<input id='mirror_2' type='checkbox' value='1' name='mirror_2' %MIRROR2%><br/><br/>
 				<input id='mirror_2_hidden' type='hidden' value='0' name='mirror_2'>
 				<input type="submit" value="Submit"><br/>

@@ -93,13 +93,15 @@ void notifyClients(String notification) {
 
 // Send WhatsApp notifications to preconfigured phone number via callmebot service api
 void sendWhatsAppMessage(String message) {
-  extern String phoneNumber;
-  extern String apiKey;
-  String url = "https://api.callmebot.com/whatsapp.php?phone=" + phoneNumber + "&apikey=" + apiKey + "&text=" + urlEncode(message);   
-  HTTPClient http;
-  http.begin(url);
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  http.POST(url);
-  http.end();
+  if (WiFi.status() == WL_CONNECTED) {
+    extern String phoneNumber;
+    extern String apiKey;
+    String url = "https://api.callmebot.com/whatsapp.php?phone=" + phoneNumber + "&apikey=" + apiKey + "&text=" + urlEncode(message);   
+    HTTPClient http;
+    http.begin(url);
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    http.POST(url);
+    http.end();
+  }
 }
 

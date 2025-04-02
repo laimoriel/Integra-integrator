@@ -18,7 +18,6 @@
 				<tr>
 					<td class="silenttd"><a href="/panel">PANEL</a></td>
 					<td class="silenttd"><a href="/stats">STATS</a></td>
-					<td class="silenttd"><a href="/sendframe">SENDFRAME</a></td>
 					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
 				</tr>
 			</table>
@@ -27,20 +26,18 @@
 	<tr>
 		<td  class="outertd">
 			<h4>Monitored objects</h4>
-			<table class="silenttable">
-				<tr><td rowspan="2" class="silenttd"><table class="innertable">%INPUTS%</table></td>
-					<td class="silenttd"><table class="innertable">%ZONES%</table></td></tr>
-				<tr><td class="silenttd"><table class="innertable">%OUTPUTS%</table></td></tr>
-			</table>
+			<table class="innertable">%INPUTS%</table>
+			<table class="innertable">%ZONES%</table>
+			<table class="innertable">%OUTPUTS%</table>
 		</td>
 	</tr>
 	<tr>
 		<td  class="outertd">
 			<h4>Input / output bytes</h4>
 			<table class="innertable">
-				<tr><th></th><th>IN</th><th>OUT</th><th>Read Pos</th><th>Write Pos</th></tr>
-				<tr><th>Port 1</th><td>%PORT1IN%</td><td>%PORT1OUT%</td><td>%READPOS1%</td><td>%WRITEPOS1%</td></tr>
-				<tr><th>Port 2</th><td>%PORT2IN%</td><td>%PORT2OUT%</td><td>%READPOS2%</td><td>%WRITEPOS2%</td></tr>
+				<tr><th></th><th>Port 1</th><th>Port 2</th></tr>
+				<tr><th>IN</th><td>%PORT1IN%</td><td>%PORT2IN%</td></tr>
+				<tr><th>OUT</th><td>%PORT1OUT%</td><td>%PORT2OUT%</td></tr>
 			</table>
 		</td>
 	</tr>

@@ -47,7 +47,7 @@
 		console.log(event.data);
 		if (document.getElementById(arguments[0])) 
 		{
-			document.getElementById(arguments[0]).innerHTML = arguments[1].trim();
+			document.getElementById(arguments[0]).innerText = arguments[1].trim();
 		}
 	}
 	
@@ -69,7 +69,6 @@
 				<tr>
 					<td class="silenttd"><a href="/panel">PANEL</a></td>
 					<td class="silenttd"><a href="/stats">STATS</a></td>
-					<td class="silenttd"><a href="/sendframe">SENDFRAME</a></td>
 					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
 				</tr>
 			</table>
