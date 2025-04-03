@@ -12,6 +12,7 @@ uint32_t * outputFramesCtr;
 uint8_t * inputsStates;
 uint8_t * zonesStates;
 uint8_t * outputsStates; 
+const uint8_t * frameCodes[3] = {inputFrameCodes, zoneFrameCodes, outputFrameCodes};
 
 
 // Handler looking for incoming frames in the rotating buffer intercepted from selected UART port
@@ -62,19 +63,13 @@ void findFrame(uint8_t port) {
         // Now we want to recognize if the frame contains data about inputs, zones or outputs
         // We do it by matching frame code to corresponding lists of known & interesting frame codes of each particular type
         for (uint8_t k = 0; k < sizeof(inputFrameCodes); k++) {
-          if (rcvFrame[1] == inputFrameCodes[k]) {
-            updateStates(rcvFrame[1], 'i', &rcvFrame[2], numInputs, inputsStates, inputNumbers, sizeof(inputFrameCodes), inputFrameCodes, inputFramesCtr); 
-          } 
+          if (rcvFrame[1] == inputFrameCodes[k]) updateStates(k, 0, &rcvFrame[2], numInputs, inputsStates, inputNumbers, inputFramesCtr);  
         }
         for (uint8_t k = 0; k < sizeof(zoneFrameCodes); k++) {
-          if (rcvFrame[1] == zoneFrameCodes[k]) {
-            updateStates(rcvFrame[1], 'z', &rcvFrame[2], numZones, zonesStates, zoneNumbers, sizeof(zoneFrameCodes), zoneFrameCodes, zoneFramesCtr); 
-          }
+          if (rcvFrame[1] == zoneFrameCodes[k]) updateStates(k, 1, &rcvFrame[2], numZones, zonesStates, zoneNumbers, zoneFramesCtr);
         }
         for (uint8_t k = 0; k < sizeof(outputFrameCodes); k++) {
-          if ((rcvFrame[1] == outputFrameCodes[k]) && (rcvFrame[2] == 0)) {
-            updateStates(rcvFrame[1], 'o', &rcvFrame[3], numOutputs, outputsStates, outputNumbers, sizeof(outputFrameCodes), outputFrameCodes, outputFramesCtr); 
-          } 
+          if ((rcvFrame[1] == outputFrameCodes[k]) && (rcvFrame[2] == 0)) updateStates(k, 2, &rcvFrame[3], numOutputs, outputsStates, outputNumbers, outputFramesCtr); 
         }
       }
     }
@@ -83,6 +78,48 @@ void findFrame(uint8_t port) {
       readPos[port]++;
     }
   }
+}
+
+
+// After receiving a relevant frame we need to update variables which hold states of inputs/zones/outputs
+// State of each input/zone/output is contained in a single byte, particular bits have a distinct meaning:
+// State of inputs, bits:
+// 0 0x01 - input violation (frame code 0x00)
+// 1 0x02 - input tamper (frame code 0x02)
+// 2 0x04 - input alarm (frame code 0x04)
+// 3 0x08 - input tamper alarm (frame code 0x06)
+// 4 0x10 - input alarm memory (frame code 0x08)
+// 5 0x20 - input tamper alarm memory (frame code 0x0A)
+// State of zones, bits:
+// 0 0x01 - armed (frame code 0x12)
+// 1 0x02 - entry time (frame code 0x13)
+// 2 0x04 - exit time > 10s (frame code 0x14)
+// 3 0x08 - exit time < 10s (frame code 0x15)
+// 4 0x10 - alarm (frame code 0x16)
+// 5 0x20 - fire alarm (frame code 0x17)
+// 6 0x40 - alarm memory (frame code 0x18)
+// 7 0z80 - fire alarm memory (frame code 0x19)
+// State of outputs, bits:
+// 0 0x01 - on/off (frame code 0x1C)
+// That's the function with most parameters in the code and I'm particularly proud of it as it's as universal as only possible
+void updateStates(uint8_t codeNum, char type, uint8_t * frame, uint8_t numObjects, uint8_t * objStates, uint8_t * objNumbers, uint32_t * frameCtrs) {
+  uint32_t framePayload = frame[0] + (frame[1] << 8) + (frame[2] << 16) + (frame[3] << 24);
+  // Iterate through all inputs/zones/outputs
+  for (uint8_t objNum = 0; objNum < numObjects; objNum++) {
+    // Now compare updated state of the input/zone/output with previous state to see if the state changed
+    // If it changed we dispatch according update to all connected http clients via websocket
+    // If it's a zone additionally send a notification over WhatsApp
+    uint8_t oldState = objStates[objNum];
+    // Apply a bitmask to zero only the bit codeNum
+    uint8_t newState = objStates[objNum] & (~(0x01 << codeNum));
+    newState |= (((framePayload >> objNumbers[objNum]) & 0x01) << codeNum);
+    if (newState != oldState) {
+      objStates[objNum] = newState;
+      refreshStates(objNum, codeNum, type, newState);
+      if (type == 1) notifyWhatsApp(objNum, newState, oldState);
+    }
+  }
+  frameCtrs[codeNum]++;
 }
 
 
@@ -128,62 +165,3 @@ uint8_t validateCRC(uint8_t * frame, uint8_t length) {
     if (crc[3] != frame[length - 1]) return 3;
     return 0;
 }
-
-
-// After receiving a relevant frame we need to update variables which hold states of inputs/zones/outputs
-// State of each input/zone/output is contained in a single byte, where particular bits have a distinct meaning:
-// State of inputs, bits:
-// 0 0x01 - input violation (frame code 0x00)
-// 1 0x02 - input tamper (frame code 0x02)
-// 2 0x04 - input alarm (frame code 0x04)
-// 3 0x08 - input tamper alarm (frame code 0x06)
-// 4 0x10 - input alarm memory (frame code 0x08)
-// 5 0x20 - input tamper alarm memory (frame code 0x0A)
-// State of zones, bits:
-// 0 0x01 - armed (frame code 0x12)
-// 1 0x02 - entry time (frame code 0x13)
-// 2 0x04 - exit time > 10s (frame code 0x14)
-// 3 0x08 - exit time < 10s (frame code 0x15)
-// 4 0x10 - alarm (frame code 0x16)
-// 5 0x20 - fire alarm (frame code 0x17)
-// 6 0x40 - alarm memory (frame code 0x18)
-// 7 0z80 - fire alarm memory (frame code 0x19)
-// State of outputs, bits:
-// 0 0x01 - on/off (frame code 0x1C)
-// That's the function with most parameters in the code and I'm particularly proud of it as it's as universal as only possible
-void updateStates(uint8_t code, char type, uint8_t * frame, uint8_t numObjects, uint8_t * objStates, uint8_t * objNumbers, uint8_t numFrameCodes, const uint8_t * frameCodes,  uint32_t * framesCtr) {
-  uint32_t framePayload = frame[0] + (frame[1] << 8) + (frame[2] << 16) + (frame[3] << 24);
-  // Each received frame always contains state of a SINGLE particular bit in ALL inputs/zones/outputs
-  // E.g. frame with code of 0x12 will contain state armed/not armed of ALL zones
-  // So we have to iterate zone by zone and check if status of any of the zones has changed
-  // Iterate through all inputs/zones/outputs
-  // Iterate bits in state of each input/zone/output as we need to go through all of them...
-  // But we check & update only the one bit corresponding to the frame code which we now process
-  for (uint8_t k = 0; k < numFrameCodes; k++) {
-    if (code == frameCodes[k]) {
-      for (uint8_t i = 0; i < numObjects; i++) {
-        // Now compare updated state of the input/zone/output with previous state to see if the state changed
-        // If it changed we dispatch according update to all connected http clients via websocket
-        // If it's a zone additionally send a notification over WhatsApp
-        uint8_t oldState = objStates[i];
-        objStates[i] &= (~(0x01 << k));
-        objStates[i] |= (((framePayload >> objNumbers[i]) & 0x01) << k);
-        if (objStates[i] != oldState) {
-          refreshStates(i, numFrameCodes, type, objStates[i]);
-          if (type == 'z') notifyWhatsApp(i, objStates[i], oldState);
-        }
-      }
-    }
-  }
-  // Additionally we update some metrics as well
-  for (uint8_t k = 0; k < numFrameCodes; k++) {
-    if (code == frameCodes[k]) {
-      framesCtr[k]++;
-    }
-  }
-}
-
-
-
-
-

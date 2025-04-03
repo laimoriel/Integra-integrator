@@ -18,12 +18,10 @@
 #define BUFFERSIZE 1024
 #define EEPROM_SSID_OFFSET 20
 
-
 // Define codes of the incoming frames we want to process
 const uint8_t inputFrameCodes[] = {0x00, 0x02, 0x04, 0x06, 0x08, 0x0A};
 const uint8_t zoneFrameCodes[] = {0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19};
 const uint8_t outputFrameCodes[] = {0x1C};
-
 
 // Initialization functions
 void readEEPROMConfig(void);
@@ -69,8 +67,9 @@ void calcCRC(uint8_t *, uint8_t, uint8_t *);
 void dispatchFrame(void);
 
 // Visualization and notifications
-void updateStates(uint8_t, char, uint8_t *, uint8_t, uint8_t *, uint8_t *, uint8_t, const uint8_t *, uint32_t *);
-void refreshStates(uint8_t, uint8_t, char, uint8_t);
+String upTime(void);
+void updateStates(uint8_t, char, uint8_t *, uint8_t, uint8_t *, uint8_t *, uint32_t *);
+void refreshStates(uint8_t, uint8_t, uint8_t, uint8_t);
 void notifyClients(String);
 void notifyWhatsApp(uint8_t, uint8_t, uint8_t);
 void sendWhatsAppMessage(String);

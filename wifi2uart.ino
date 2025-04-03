@@ -82,7 +82,7 @@ void tablesInit(void) {
   extern uint32_t * inputFramesCtr;
   extern uint32_t * zoneFramesCtr;
   extern uint32_t * outputFramesCtr;
-
+  
   File file = LittleFS.open("/integra_inputs.cfg", "r");  
   while (file.available()) {file.readStringUntil('\n'); numInputs++;}
   file.close();
@@ -262,7 +262,7 @@ void port1Handler(void *pvParameters) {
 void port2Handler(void *pvParameters) {
   while(1) {
     TCP2COM(1);
-    uint8_t listen = (port_mirroring & 0x02) > 1;
+    uint8_t listen = (port_mirroring & 0x02) >> 1;
     COM2TCP(1, listen);
     delay(10);
   }
