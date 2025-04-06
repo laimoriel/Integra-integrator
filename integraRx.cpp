@@ -1,30 +1,48 @@
 #include "config.h"
 
-// Self explanatory
-uint8_t numInputs = 0;
-uint8_t numZones = 0;
-uint8_t numOutputs = 0;
-// Some metrics to report the number of frames received in each category
-uint32_t * inputFramesCtr;
-uint32_t * zoneFramesCtr;
-uint32_t * outputFramesCtr;
+// Number of inputs/zones/outputs from config files
+extern uint8_t numInputs;
+extern uint8_t numZones;
+extern uint8_t numOutputs;
+// Numbers of the inputs/zones/outputs being monitored
+extern uint8_t * inputsNumbers;
+extern uint8_t * zonesNumbers;
+extern uint8_t * outputsNumbers; 
+// Descriptions of inputs/zones/outputs from config
+extern char * inputsNames;
+extern char * zonesNames;
+extern char * outputsNames;
 // Variables which store current state of inputs/zones/outputs being monitored
-uint8_t * inputsStates;
-uint8_t * zonesStates;
-uint8_t * outputsStates; 
-const uint8_t * frameCodes[3] = {inputFrameCodes, zoneFrameCodes, outputFrameCodes};
+extern uint8_t * inputsStates;
+extern uint8_t * zonesStates;
+extern uint8_t * outputsStates; 
+// Some metrics to report the number of frames received in each category
+extern uint32_t * inputFramesCtr;
+extern uint32_t * zoneFramesCtr;
+extern uint32_t * outputFramesCtr;
 
+extern uint32_t readPos[2];
+extern uint32_t writePos[2];
+
+const uint8_t * frameCodes[3] = {inputFrameCodes, zoneFrameCodes, outputFrameCodes};
 
 // Handler looking for incoming frames in the rotating buffer intercepted from selected UART port
 void integraRxHandler(void *pvParameters) {
   extern uint32_t readPos[2];
   extern uint32_t writePos[2];
+  extern uint32_t integrarxhMaxTime;
+  uint16_t bytesToProcess[2] = {0, 0};
   while(1) {
+    uint32_t start = millis();
     for (uint8_t i = 0; i < 2; i++) {
-      if (writePos[i] >= (readPos[i] + 256)) {
+      bytesToProcess[i] = writePos[i] - readPos[i];
+      if (writePos[i] > (readPos[i] + 64)) {
         findFrame(i);
       }
     }
+    //Serial.printf("Stack IntegraRx watermark %d\n", uxTaskGetStackHighWaterMark(NULL));
+    uint32_t time = millis() - start;
+    if (time > integrarxhMaxTime) integrarxhMaxTime = time;
     delay(10);
   }
 }
@@ -44,32 +62,27 @@ void integraRxHandler(void *pvParameters) {
 // 4 bytes = crcs      
 void findFrame(uint8_t port) {
   extern uint8_t rollBuf[2][BUFFERSIZE];
-  extern uint32_t readPos[2];
-  extern uint32_t writePos[2];
-  extern uint8_t * inputNumbers;
-  extern uint8_t * zoneNumbers;
-  extern uint8_t * outputNumbers; 
-  uint8_t rcvFrame[24];
+  uint8_t rcvFrame[16];
+  uint8_t extractStatus = 0;
   // writePos must always precede readPos as we only want to look for data AFTER we received it ;)
-  while (writePos[port] > readPos[port] + 224) {
+  while (writePos[port] > readPos[port] + 16) {
     // We recognize beginning of a frame by sequence of bytes FF FF xx - where xx != FF and is code of the frame
     if ((rollBuf[port][readPos[port] % BUFFERSIZE] == 0xFF) && (rollBuf[port][(readPos[port] + 1) % BUFFERSIZE] == 0xFF) && (rollBuf[port][(readPos[port] + 2) % BUFFERSIZE] != 0xFF)) {
-      // Skip the initial FF FF bytes
+      // Skip the initial two FF FF bytes
       readPos[port] += 2;
-      // And now proceed with extracting the whole frame, but do not exceed 24 bytes (valid frames we're interested in will be shorter than that)
-      readPos[port] = extractFrame(rcvFrame, 24, rollBuf[port], readPos[port]);
-      // Validate CRCs of the extracted frames, if it's not correct just ignore the frame
-      if (validateCRC(&rcvFrame[1], rcvFrame[0]) == 0) {
-        // Now we want to recognize if the frame contains data about inputs, zones or outputs
-        // We do it by matching frame code to corresponding lists of known & interesting frame codes of each particular type
-        for (uint8_t k = 0; k < sizeof(inputFrameCodes); k++) {
-          if (rcvFrame[1] == inputFrameCodes[k]) updateStates(k, 0, &rcvFrame[2], numInputs, inputsStates, inputNumbers, inputFramesCtr);  
-        }
-        for (uint8_t k = 0; k < sizeof(zoneFrameCodes); k++) {
-          if (rcvFrame[1] == zoneFrameCodes[k]) updateStates(k, 1, &rcvFrame[2], numZones, zonesStates, zoneNumbers, zoneFramesCtr);
-        }
-        for (uint8_t k = 0; k < sizeof(outputFrameCodes); k++) {
-          if ((rcvFrame[1] == outputFrameCodes[k]) && (rcvFrame[2] == 0)) updateStates(k, 2, &rcvFrame[3], numOutputs, outputsStates, outputNumbers, outputFramesCtr); 
+      if (extractFrame(rcvFrame, 16, rollBuf[port], readPos + port) == 0) {
+        if (validateCRC(&rcvFrame[1], rcvFrame[0]) == 0) {
+          // Now we want to recognize if the frame contains data about inputs, zones or outputs
+          // We do it by matching frame code to corresponding lists of known & interesting frame codes of each particular type
+          for (uint8_t k = 0; k < sizeof(inputFrameCodes); k++) {
+            if (rcvFrame[1] == inputFrameCodes[k]) updateStates(k, 0, &rcvFrame[2], numInputs, inputsStates, inputsNumbers, inputFramesCtr);  
+            }
+          for (uint8_t k = 0; k < sizeof(zoneFrameCodes); k++) {
+            if (rcvFrame[1] == zoneFrameCodes[k]) updateStates(k, 1, &rcvFrame[2], numZones, zonesStates, zonesNumbers, zoneFramesCtr);
+          }
+          for (uint8_t k = 0; k < sizeof(outputFrameCodes); k++) {
+            if ((rcvFrame[1] == outputFrameCodes[k]) && (rcvFrame[2] == 0)) updateStates(k, 2, &rcvFrame[3], numOutputs, outputsStates, outputsNumbers, outputFramesCtr); 
+          }
         }
       }
     }
@@ -79,6 +92,31 @@ void findFrame(uint8_t port) {
     }
   }
 }
+
+// Extract a frame from buf starting from pos but do not exceed maxFrameSize
+// Simply read & copy bytes until we encounter another FF - marker of frame end (usually also start of next).
+// The first byte of returned frame will contain number of bytes in the frame
+// It's easier to later pass it around this way than using a separate variable
+uint8_t extractFrame(uint8_t * frame, uint8_t maxFrameSize, uint8_t * inputBuffer, uint32_t * readPos) {
+  uint8_t rcvBytes = 0;
+  for (rcvBytes = 0; rcvBytes < maxFrameSize - 1; rcvBytes++) {
+    if ((inputBuffer[(*readPos + rcvBytes) % BUFFERSIZE] == 0xFF) && (rcvBytes > 0)) {
+      frame[0] = rcvBytes;
+      *readPos += rcvBytes;
+      return 0;
+    }
+    else if ((inputBuffer[*readPos % BUFFERSIZE] == 0xFF) && (rcvBytes == 0))
+    {
+      return 1;
+    }
+    else {
+      frame[rcvBytes + 1] = inputBuffer[(*readPos + rcvBytes) % BUFFERSIZE];
+    }
+  }
+  *readPos += rcvBytes;
+  return 2;
+}
+
 
 
 // After receiving a relevant frame we need to update variables which hold states of inputs/zones/outputs
@@ -103,6 +141,8 @@ void findFrame(uint8_t port) {
 // 0 0x01 - on/off (frame code 0x1C)
 // That's the function with most parameters in the code and I'm particularly proud of it as it's as universal as only possible
 void updateStates(uint8_t codeNum, char type, uint8_t * frame, uint8_t numObjects, uint8_t * objStates, uint8_t * objNumbers, uint32_t * frameCtrs) {
+  extern QueueHandle_t whatsAppQ;
+  struct zoneStatusNotification notification;
   uint32_t framePayload = frame[0] + (frame[1] << 8) + (frame[2] << 16) + (frame[3] << 24);
   // Iterate through all inputs/zones/outputs
   for (uint8_t objNum = 0; objNum < numObjects; objNum++) {
@@ -116,26 +156,15 @@ void updateStates(uint8_t codeNum, char type, uint8_t * frame, uint8_t numObject
     if (newState != oldState) {
       objStates[objNum] = newState;
       refreshStates(objNum, codeNum, type, newState);
-      if (type == 1) notifyWhatsApp(objNum, newState, oldState);
+      if (type == 1) {
+        notification.zone = objNum;
+        notification.oldState = oldState;
+        notification.newState = newState;
+        xQueueSend(whatsAppQ, (void *) &notification, 0);
+      }
     }
   }
   frameCtrs[codeNum]++;
-}
-
-
-// Extract a frame from buf starting from pos but do not exceed maxFrameSize
-// Simply read & copy bytes until we encounter another FF - marker of frame end (usually also start of next).
-// The first byte of returned frame will contain number of bytes in the frame
-// It's easier to later pass it around this way than using a separate variable
-uint32_t extractFrame(uint8_t * frame, uint8_t maxFrameSize, uint8_t * buf, uint32_t pos) {
-  uint8_t rcvBytes = 0;
-  while ((buf[pos % BUFFERSIZE] != 0xFF) && (rcvBytes < maxFrameSize)) {
-    frame[rcvBytes + 1] = buf[pos % BUFFERSIZE];
-    rcvBytes++;
-    pos++;
-  }
-  frame[0] = rcvBytes;
-  return pos;
 }
 
 

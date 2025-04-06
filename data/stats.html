@@ -2,6 +2,7 @@
  <html>
  <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<meta http-equiv="refresh" content="5"> 
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-title" content="Integra-tor">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,15 +27,13 @@
 	<tr>
 		<td  class="outertd">
 			<h4>UPTIME: %UPTIME%</h4>
-			<h4>FREE HEAP: %HEAP%</h4>
-		</td>
-	</tr>
-	<tr>
-		<td  class="outertd">
-			<h4>Monitored objects</h4>
-			<table class="innertable">%INPUTS%</table>
-			<table class="innertable">%ZONES%</table>
-			<table class="innertable">%OUTPUTS%</table>
+			<table class="innertable">
+				<tr><th colspan="2">HEAP</th></tr>
+				<tr><th>Total</th><td>%HEAPSIZE%</td></tr>
+				<tr><th>Free</th><td>%HEAP%</td></tr>
+				<tr><th>Watermark</th><td>%HEAPLOW%</td></tr>
+				<tr><th>Max alloc</th><td>%HEAPALLOC%</td></tr>
+			</table>
 		</td>
 	</tr>
 	<tr>
@@ -42,11 +41,27 @@
 			<h4>Input / output bytes</h4>
 			<table class="innertable">
 				<tr><th></th><th>Port 1</th><th>Port 2</th></tr>
-				<tr><th>IN</th><td>%PORT1IN%</td><td>%PORT2IN%</td></tr>
-				<tr><th>OUT</th><td>%PORT1OUT%</td><td>%PORT2OUT%</td></tr>
+				<tr><th>Total in</th><td>%PORT1IN%</td><td>%PORT2IN%</td></tr>
+				<tr><th>Total out</th><td>%PORT1OUT%</td><td>%PORT2OUT%</td></tr>
+				<tr><th>Max depth in</th><td>%PORT1INDEPTH%</td><td>%PORT2INDEPTH%</td></tr>
+				<tr><th>Max depth out</th><td>%PORT1OUTDEPTH%</td><td>%PORT2OUTDEPTH%</td></tr>
 			</table>
 		</td>
 	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Max processing times</h4>
+			<table class="innertable">
+				<tr><th colspan="2">Times</th></tr>
+				<tr><th>Port 1 handler</th><td>%PORT1HMAXTIME%</td></tr>
+				<tr><th>Port 2 handler</th><td>%PORT2HMAXTIME%</td></tr>
+				<tr><th>Connection handler</th><td>%CONNECTIONHMAXTIME%</td></tr>
+				<tr><th>Integra RX handler</th><td>%INTEGRARXHMAXTIME%</td></tr>
+				<tr><th>WhatsApp handler</th><td>%WHATSAPPHMAXTIME%</td></tr>
+			</table>
+		</td>
+	</tr>
+
 	<tr>
 		<td  class="outertd">
 			<h4>Received input frames</h4>
@@ -69,6 +84,14 @@
 			<table class="innertable">
 			%OUTPUTFRAMETABLE%
 			</table>
+		</td>
+	</tr>
+	<tr>
+		<td  class="outertd">
+			<h4>Monitored objects</h4>
+			<table class="innertable">%INPUTS%</table>
+			<table class="innertable">%ZONES%</table>
+			<table class="innertable">%OUTPUTS%</table>
 		</td>
 	</tr>
 </table>

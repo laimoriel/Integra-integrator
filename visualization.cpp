@@ -1,67 +1,97 @@
 #include "config.h"
 
+// Number of inputs/zones/outputs from config files
+extern uint8_t numInputs;
+extern uint8_t numZones;
+extern uint8_t numOutputs;
 // Numbers of the inputs/zones/outputs being monitored
-uint8_t * inputNumbers;
-uint8_t * zoneNumbers;
-uint8_t * outputNumbers; 
+extern uint8_t * inputsNumbers;
+extern uint8_t * zonesNumbers;
+extern uint8_t * outputsNumbers; 
+// Descriptions of inputs/zones/outputs from config
+extern char * inputsNames;
+extern char * zonesNames;
+extern char * outputsNames;
 
+// Variables which store current state of inputs/zones/outputs being monitored
+extern uint8_t * inputsStates;
+extern uint8_t * zonesStates;
+extern uint8_t * outputsStates; 
+// Some metrics to report the number of frames received in each category
+extern uint32_t * inputFramesCtr;
+extern uint32_t * zoneFramesCtr;
+extern uint32_t * outputFramesCtr;
+
+extern uint16_t bufInDepth[2];
+extern uint16_t bufOutDepth[2];
+extern uint32_t bytesIn[2];
+extern uint32_t bytesOut[2];
+extern uint32_t readPos[2];
+extern uint32_t writePos[2];
+
+extern uint32_t port1hMaxTime;
+extern uint32_t port2hMaxTime;
+extern uint32_t connectionhMaxTime;
+extern uint32_t integrarxhMaxTime;
+extern uint32_t whatsapphMaxTime;
 
 // Handle dynamic content in panel.html view:
 // And we always generate tables to visualize states of inputs/zones/outputs based on the config files.
 String processorIntegra(const String & var) {
   char type = var[0];
-  extern uint8_t * inputsStates;
-  extern uint8_t * zonesStates;
-  extern uint8_t * outputsStates; 
-  if (var == "TABLEINPUTS") return generateStatesTable("/integra_inputs.cfg", sizeof(inputFrameCodes), 'i', inputsStates);
-  if (var == "TABLEZONES") return generateStatesTable("/integra_zones.cfg", sizeof(zoneFrameCodes), 'z', zonesStates);
-  if (var == "TABLEOUTPUTS") return generateStatesTable("/integra_outputs.cfg", sizeof(outputFrameCodes), 'o', outputsStates);
+  if (var == "TABLEINPUTS") return generateStatesTable('i', numInputs, sizeof(inputFrameCodes), inputsNames, inputsStates);
+  if (var == "TABLEZONES") return generateStatesTable('z', numZones, sizeof(zoneFrameCodes), zonesNames, zonesStates);
+  if (var == "TABLEOUTPUTS") return generateStatesTable('o', numOutputs, sizeof(outputFrameCodes), outputsNames, outputsStates);
   if (var == "ZONESFORM") {
-    String form = "";
-    String name = "";
-    String numberStr = "";
-    uint8_t number = 0;
-    File file = LittleFS.open("/integra_zones.cfg", "r");
-    if (!file) return "File not found";
-    while (file.available()) {
-      numberStr = file.readStringUntil(':');
-      number = atoi(numberStr.c_str());
-      name = file.readStringUntil('\n');
-      name.trim();
-      form += "\n<option value=\"" + String(number) + "\">" + name + "</option>";
+    uint16_t arraySize = 50 * numZones;
+    char * output = (char *) malloc(arraySize * sizeof(char));
+    uint16_t index = 0;
+    for (uint8_t zone = 0; zone < numZones; zone++) {
+      strcpy(output + index, "\n<option value=\"");
+      index += 15;
+      sprintf(output + index, "%.2d", zonesNumbers[zone]);
+      index += 2;
+      strcpy(output + index, "\">");
+      index += 2;
+      strcpy(output + index, zonesNames + 16 * zone);
+      index += strlen(zonesNames + 16 * zone);
+      strcpy(output + index, "</option>");
+      index += 9;
     }
-    form += "\n";
-    file.close();
-    return form;
+    String outputStr = String(output);
+    free(output);
+    return outputStr;
   }
 }
 
 
 // Fill corresponding placeholders in the settings HTML code with variables
 String processorStats(const String & var) {
-  extern uint32_t bytesIn[2];
-  extern uint32_t bytesOut[2];
-  extern uint32_t * inputFramesCtr;
-  extern uint32_t * zoneFramesCtr;
-  extern uint32_t * outputFramesCtr;
-  extern uint8_t numInputs;
-  extern uint8_t numZones;
-  extern uint8_t numOutputs;
-  extern uint8_t * inputNumbers;
-  extern uint8_t * zoneNumbers;
-  extern uint8_t * outputNumbers; 
+
   if (var == "PORT1IN") return String(bytesIn[0]);
   else if (var == "PORT1OUT") return String(bytesOut[0]);
   else if (var == "PORT2IN") return String(bytesIn[1]);
   else if (var == "PORT2OUT") return String(bytesOut[1]);
+  else if (var == "PORT1INDEPTH") return String(bufInDepth[0]);
+  else if (var == "PORT1OUTDEPTH") return String(bufOutDepth[0]);
+  else if (var == "PORT2INDEPTH") return String(bufInDepth[1]);
+  else if (var == "PORT2OUTDEPTH") return String(bufOutDepth[1]);
+  else if (var == "PORT1HMAXTIME") return String(port1hMaxTime);
+  else if (var == "PORT2HMAXTIME") return String(port2hMaxTime);
+  else if (var == "CONNECTIONHMAXTIME") return String(connectionhMaxTime);
+  else if (var == "WHATSAPPHMAXTIME") return String(whatsapphMaxTime);
+  else if (var == "INTEGRARXHMAXTIME") return String(integrarxhMaxTime);
   else if (var == "INPUTFRAMETABLE") return generateFramesTable(sizeof(inputFrameCodes), inputFrameCodes, inputFramesCtr);
   else if (var == "ZONEFRAMETABLE") return generateFramesTable(sizeof(zoneFrameCodes), zoneFrameCodes, zoneFramesCtr);
   else if (var == "OUTPUTFRAMETABLE") return generateFramesTable(sizeof(outputFrameCodes), outputFrameCodes, outputFramesCtr);
-  else if (var == "INPUTS") return generateNumbersTable("/integra_inputs.cfg", "Inputs");
-  else if (var == "ZONES") return generateNumbersTable("/integra_zones.cfg", "Zones");
-  else if (var == "OUTPUTS") return generateNumbersTable("/integra_outputs.cfg", "Outputs");
+  else if (var == "INPUTS") return generateNumbersTable(numInputs, inputsNumbers, inputsNames, "Inputs");
+  else if (var == "ZONES") return generateNumbersTable(numZones, zonesNumbers, zonesNames, "Zones");
+  else if (var == "OUTPUTS") return generateNumbersTable(numOutputs, outputsNumbers, outputsNames, "Outputs");
   else if (var == "UPTIME") return upTime();
-  else if (var == "HEAP") return String(esp_get_free_heap_size());
+  else if (var == "HEAP") return String(ESP.getFreeHeap());
+  else if (var == "HEAPLOW") return String(ESP.getMinFreeHeap());
+  else if (var == "HEAPSIZE") return String(ESP.getHeapSize());
+  else if (var == "HEAPALLOC") return String(ESP.getMaxAllocHeap());
   else return "n/a";
 }
 
@@ -73,73 +103,99 @@ String processorStats(const String & var) {
 // 12:PIR detector in sleeping room
 // Each cell in the tables will contain an id based on input/zone/output number and bit which corresponds with particular state.
 // e.g. <td id="z021"> means: Zone 02, bit 1 (armed state). For description of particular bits see updateStates function.
-String generateStatesTable(String filename, uint8_t columns, char type, uint8_t * states) {
-  String numberStr = "";
-  uint8_t number = 0;
-  String name = "";
-  String output = "";
-  File file = LittleFS.open(filename, "r");
-  if (!file) return "File not found";
-  while (file.available()) {
-    // Read corresponding config file line by line and split each line according to expected pattern as described above
-    numberStr = file.readStringUntil(':');
-    name = file.readStringUntil('\n');
-    name.trim();
-    output += "\n<tr><th>" + name + "</th>";
-    for (uint8_t i = 0; i < columns; i++) {
-      char code[5];
+String generateStatesTable(char type, uint8_t rows, uint8_t columns, char * names, uint8_t * states) {
+  uint16_t arraySize = ((36 * columns) + 34) * rows;
+  char * output = (char *) malloc(arraySize * sizeof(char));
+  uint16_t index = 0;
+  for (uint8_t rowNum = 0; rowNum < rows; rowNum++) {
+    strcpy(output + index, "\n<tr><th>");
+    index += 9;
+    uint8_t nameSize = strlen(names + 16 * rowNum);
+    strncpy(output + index, names + 16 * rowNum, nameSize);
+    index += nameSize;
+    for (uint8_t colNum = 0; colNum < columns; colNum++) {
+      strcpy(output + index, "<td class=\"innertd\" id=\"");
+      index += 24;
+      sprintf(output + index, "%c%.2d%d", type, rowNum, colNum);
+      index += 4;
+      strcpy(output + index, "\">");
+      index += 2;
       char state;
-      // This is the actual generation of cell IDs
-      sprintf(code, "%c%.2d%d\0", type, number, i);
-      // And here is generation of the according <td id=...> HTML code
-      if ((states[number] >> i) & 0x01 != 0) state = '#'; else state = ' ';
-      output += "<td class=\"innertd\" id=\"" + String(code) + "\">" + String(state) +"</td>" ;
+      if ((states[rowNum] >> colNum) & 0x01 != 0) state = '#'; else state = ' ';
+      output[index] = state;
+      index += 1;
+      strcpy(output + index, "</td>");
+      index += 5;
     }
-    output += "</tr>";
-    number++;
+    strcpy(output + index, "</tr>");
+    index += 5;
   }
-  output += "\n";
-  file.close();
-  return output;
+  output[index] = '\0';
+  String outputStr = String(output);
+  free(output);
+  return outputStr;
 }
 
 
 // Generate HTML to display tables which visualize statistics of received frames.
 // We can always change the list of frames we're interested in so they need to be created dynamically.
-String generateFramesTable(uint8_t numCells, const uint8_t * codes, uint32_t * counter)
+String generateFramesTable(uint8_t numCodes, const uint8_t * codes, uint32_t * counter)
 {
-  String tableRow = "\n<tr><th>Code: </th><th>Count: </th></tr>";
-  for (uint8_t i = 0; i < numCells; i++) {
-    char code[5];
-    sprintf(code, "0x%.2X", codes[i]);
-    code[4] = '\0';
-    tableRow += "\n<tr><th>" + String(code) + "</th><td class=\"frametd\">" + String(counter[i]) + "</td></tr>";
+  uint16_t arraySize = 41 + (48 + 10) * numCodes;
+  char * output = (char *) malloc(arraySize * sizeof(char));
+  uint16_t index = 0;
+  strcpy(output + index, "\n<tr><th>Code: </th><th>Count: </th></tr>");
+  index += 41;
+  for (uint8_t numCode = 0; numCode < numCodes; numCode++) {
+    strcpy(output + index, "\n<tr><th>");
+    index += 9;
+    sprintf(output + index, "0x%.2X", codes[numCode]);
+    index += 4;
+    strcpy(output + index, "</th><td class=\"frametd\">");
+    index += 25;
+    char counterStr[11];
+    sprintf(counterStr, "%d\0", counter[numCode]);
+    sprintf(output + index, "%d", counter[numCode]);
+    index += strlen(counterStr);
+    strcpy(output + index, "</td></tr>");
+    index += 10;
   }
-  return tableRow;
+  output[index] = '\0';
+  String outputStr = String(output);
+  free(output);
+  return outputStr;
 }
 
 
 // Generate list of inputs/zones/outputs which are stored in the config
 // Only for diagnostic purposes
-String generateNumbersTable(String filename, String header) {
-  String numberStr = "";
-  String name = "";
-  String output = "";
-  output += "\n<tr><th colspan=\"2\">" + header + "</th>" ;
-  File file = LittleFS.open(filename, "r");
-  if (!file) return "File not found";
-  while (file.available()) {
-    // Read corresponding config file line by line and split each line according to expected pattern as described above
-    numberStr = file.readStringUntil(':');
-    name = file.readStringUntil('\n');
-    name.trim();
-    output += "\n<tr><th>" + numberStr + "</th><td class=\"frametd\">" + name + "</td></tr>";
+String generateNumbersTable(uint8_t rows, uint8_t * numbers, char * names, String header) {
+  uint16_t arraySize = 50 + rows * 72;
+  char * output = (char *) malloc(arraySize * sizeof(char));
+  uint16_t index = 0;
+  strcpy(output + index, "\n<tr><th colspan=\"2\">");
+  index += 21;
+  strcpy(output + index, header.c_str());
+  index += header.length();
+  strcpy(output + index, "</th></tr>");
+  index += 9;
+  for (uint8_t numObj = 0; numObj < rows; numObj++) {
+    strcpy(output + index, "\n<tr><th>");
+    index += 9;
+    sprintf(output + index, "%.2d", numbers[numObj]);
+    index += 2;
+    strcpy(output + index, "</td><td class=\"frametd\">");
+    index += 25;
+    strcpy(output + index, names + 16 * numObj);
+    index += strlen(names + 16 * numObj);
+    strcpy(output + index, "</td></tr>");
+    index += 10;
   }
-  output += "\n";
-  file.close();
-  return output;
+  output[index] = '\0';
+  String outputStr = String(output);
+  free(output);
+  return outputStr;
 }
-
 
 
 // Dispatch a notification to all connected clients via WebSocket.
@@ -168,30 +224,44 @@ void refreshStates(uint8_t objNum, uint8_t codeNum, uint8_t type, uint8_t state)
 // 6 0x40 - mask 0xBF, alarm memory (frame 0x18)
 // 7 0z80 - mask 0x7F, fire alarm memory (frame 0x19)
 // This is highly customized - at the moment we only notify of zone arming/disarming and alarms
-// Entry time and exit time change too dynamically, it usually wouldn't make sens in my case
-void notifyWhatsApp(uint8_t i, uint8_t state, uint8_t oldstate) {
-  String message = "";
-  String numberStr = "";
-  String name = "";
-  uint8_t number = 0;
-  uint8_t change = state ^ oldstate;
-  File file = LittleFS.open("/integra_zones.cfg", "r");
-  while (file.available()) {
-    numberStr = file.readStringUntil(':');
-    number = atoi(numberStr.c_str());
-    name = file.readStringUntil('\n');
-    if (i == number) {
+// Entry time and exit time change too dynamically, it usually wouldn't make sense in my case
+void notifyWhatsApp(uint8_t zoneChanged, uint8_t newState, uint8_t oldstate) {
+  uint16_t arraySize = 128;
+  char * output = (char *) malloc(arraySize * sizeof(char));
+  uint8_t change = newState ^ oldstate;
+  uint16_t index = 0;
+  for (uint8_t zoneNum = 0; zoneNum < numZones; zoneNum++) {
+    if (zonesNumbers[zoneNum] == zoneChanged) {
       if ((change & 0x01) != 0) {
-        message += "Strefa " + name;
-        if (state & 0x01 != 0) message += " uzbrojona.\n"; else message += " rozbrojona.\n";
+        strcpy(output + index, "Strefa ");
+        index += 7;
+        strcpy(output + index, zonesNames + zoneNum * 16);
+        index += strlen(zonesNames + zoneNum * 16);
+        if (newState & 0x01 != 0) {
+          strcpy(output + index, " uzbrojona.\n");
+          index += 12;
+        }
+        else {
+          strcpy(output + index, " rozbrojona.\n");
+          index += 13;
+        } 
       }
-      if (((change & 0x50) || (state & 0x50)) != 0) {
-        message += "Alarm w strefie " + name + "\n";
+      if (((change & 0x50) || (newState & 0x50)) != 0) {
+        strcpy(output + index, "Alarm w strefie ");
+        index += 16;
+        strcpy(output + index, zonesNames + zoneNum * 16);
+        index += strlen(zonesNames + zoneNum * 16);
       }
-      if (((change & 0xA0) || (state & 0xA0)) != 0) {
-        message += "Alarm pozarowy w strefie " + name + "\n";
+      if (((change & 0xA0) || (newState & 0xA0)) != 0) {
+        strcpy(output + index, "Alarm pozarowy w strefie ");
+        index += 25;
+        strcpy(output + index, zonesNames + zoneNum * 16);
+        index += strlen(zonesNames + zoneNum * 16);
       }
-      sendWhatsAppMessage(message);
+      output[index] = '\0';
+      String outputStr = String(output);
+      free(output);
+      sendWhatsAppMessage(outputStr);
       break;
     }
   }

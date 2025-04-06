@@ -64,7 +64,7 @@ void notFound(AsyncWebServerRequest *request) {
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT:
-      ws.cleanupClients(3);
+      ws.cleanupClients(2);
       break;
     case WS_EVT_DISCONNECT:
       break;
