@@ -30,9 +30,13 @@ HardwareSerial Serial_2(2);
 HardwareSerial* COM[2] = {&Serial_1, &Serial_2};
 
 // Buffers and counters for intercepting & mirroring data from UART
+uint8_t bufIn[2][BUFFERSIZE];
+uint8_t bufOut[2][BUFFERSIZE];
 uint8_t rollBuf[2][BUFFERSIZE];
 uint32_t readPos[2] = {0, 0};
 uint32_t writePos[2] = {0, 0};
+uint16_t bufInDepth[2] = {0, 0};
+uint16_t bufOutDepth[2] = {0, 0};
 
 // some metrics to report
 uint32_t bytesIn[2] = {0, 0};
@@ -43,7 +47,39 @@ TaskHandle_t port1_h = NULL;
 TaskHandle_t port2_h = NULL;
 TaskHandle_t connections_h = NULL;
 TaskHandle_t status_h = NULL;
+TaskHandle_t whatsApp_h = NULL;
+QueueHandle_t whatsAppQ;
 
+// Numbers of the inputs/zones/outputs being monitored
+uint8_t * inputsNumbers;
+uint8_t * zonesNumbers;
+uint8_t * outputsNumbers; 
+// Sizes of descriptions of inputs/zones/outputs from config
+uint8_t * inputsNameSizes;
+uint8_t * zonesNameSizes;
+uint8_t * outputsNameSizes; 
+// Descriptions of inputs/zones/outputs from config
+char * inputsNames;
+char * zonesNames;
+char * outputsNames;
+// Self explanatory
+uint8_t numInputs = 0;
+uint8_t numZones = 0;
+uint8_t numOutputs = 0;
+// Some metrics to report the number of frames received in each category
+uint32_t * inputFramesCtr;
+uint32_t * zoneFramesCtr;
+uint32_t * outputFramesCtr;
+// Variables which store current state of inputs/zones/outputs being monitored
+uint8_t * inputsStates;
+uint8_t * zonesStates;
+uint8_t * outputsStates; 
+
+uint32_t port1hMaxTime = 0;
+uint32_t port2hMaxTime = 0;
+uint32_t connectionhMaxTime = 0;
+uint32_t integrarxhMaxTime = 0;
+uint32_t whatsapphMaxTime = 0;
 
 // Self explanatory
 void readEEPROMConfig(void) {
@@ -65,33 +101,65 @@ void readEEPROMConfig(void) {
   apiKey = EEPROM.readString(EEPROM_SSID_OFFSET + ssidClient.length() + passClient.length() + phoneNumber.length() + 3);
 }
 
+uint16_t countLines(String input) {
+  uint32_t strIndex = 0;
+  uint16_t numLines = 0;
+  if (input.length() > 0) {
+    numLines++;
+    while (strIndex < input.length()) {
+      strIndex = input.indexOf('\n', strIndex + 1);
+      if (strIndex == -1) break;
+      numLines++;
+    }
+  return numLines;
+  }
+  else return 0;
+}
+
+uint16_t countFileLines(String filename) {
+  uint16_t numLines = 0;
+  File file = LittleFS.open(filename, "r");
+  while (file.available()) {
+    String content = file.readStringUntil('\n');
+    numLines++;
+  }
+  file.close();
+  return numLines;
+}
+
+
+void readObjectNumbersNames(String filename, uint8_t numObjects, uint8_t * objNumbers, char * objNames) {
+  File file = LittleFS.open(filename, "r");  
+  for (uint8_t num = 0; num < numObjects; num++) {
+    String objNumberStr = file.readStringUntil(':');
+    String objNameStr = file.readStringUntil('\n');
+    objNumbers[num] = atoi(objNumberStr.c_str());
+    uint8_t nameSize = min(15, (int)objNameStr.length());
+    objNameStr.toCharArray(objNames + 16 * num, nameSize);
+    objNames[16 * num + nameSize + 1] = '\0';
+  }
+  file.close();
+}
+
 
 // Some arrays can only be created and initialized AFTER we read the main config:
-// - how many inputs, zones and outputs are in the supported system.
+// - how many inputs, zones and outputs are in the supported system, 
+// how many characters we need for description of those objects.
 // Afterwards we need to initialize them accordingly.
 void tablesInit(void) {
-  extern uint8_t numInputs;
-  extern uint8_t numZones;
-  extern uint8_t numOutputs;
-  extern uint8_t * inputsStates;
-  extern uint8_t * zonesStates;
-  extern uint8_t * outputsStates; 
-  extern uint8_t * inputNumbers;
-  extern uint8_t * zoneNumbers;
-  extern uint8_t * outputNumbers; 
-  extern uint32_t * inputFramesCtr;
-  extern uint32_t * zoneFramesCtr;
-  extern uint32_t * outputFramesCtr;
-  
-  File file = LittleFS.open("/integra_inputs.cfg", "r");  
-  while (file.available()) {file.readStringUntil('\n'); numInputs++;}
-  file.close();
-  file = LittleFS.open("/integra_zones.cfg", "r");
-  while (file.available()) {file.readStringUntil('\n'); numZones++;}
-  file.close();
-  file = LittleFS.open("/integra_outputs.cfg", "r"); 
-  while (file.available()) { file.readStringUntil('\n'); numOutputs++;}
-  file.close();
+  // Read config files into arrays
+  numInputs = countFileLines("/integra_inputs.cfg");
+  numZones = countFileLines("/integra_zones.cfg");
+  numOutputs = countFileLines("/integra_outputs.cfg");
+  inputsNumbers = (uint8_t*) malloc(numInputs * sizeof(uint8_t));
+  zonesNumbers = (uint8_t*) malloc(numZones * sizeof(uint8_t));
+  outputsNumbers = (uint8_t*) malloc(numOutputs * sizeof(uint8_t));
+  inputsNames = (char *) malloc(numInputs * 16 * sizeof(char));
+  zonesNames = (char *) malloc(numZones * 16 * sizeof(char));
+  outputsNames = (char *) malloc(numOutputs * 16 * sizeof(char));
+  readObjectNumbersNames("/integra_inputs.cfg", numInputs, inputsNumbers, inputsNames);
+  readObjectNumbersNames("/integra_zones.cfg", numZones, zonesNumbers, zonesNames);
+  readObjectNumbersNames("/integra_outputs.cfg", numOutputs, outputsNumbers, outputsNames);
 
   inputsStates = (uint8_t*) malloc(numInputs * sizeof(uint8_t));
   zonesStates = (uint8_t*) malloc(numZones * sizeof(uint8_t));
@@ -107,36 +175,6 @@ void tablesInit(void) {
   for (uint8_t i = 0; i < sizeof(zoneFrameCodes); i++) zoneFramesCtr[i] = 0;
   for (uint8_t i = 0; i < sizeof(outputFrameCodes); i++) outputFramesCtr[i] = 0;
 
-  inputNumbers = (uint8_t*) malloc(numInputs * sizeof(uint8_t));
-  zoneNumbers = (uint8_t*) malloc(numZones * sizeof(uint8_t));
-  outputNumbers = (uint8_t*) malloc(numOutputs * sizeof(uint8_t));
-  file = LittleFS.open("/integra_inputs.cfg", "r");  
-  uint8_t i = 0;
-  while (file.available()) {
-    String numberStr = file.readStringUntil(':');
-    inputNumbers[i] = atoi(numberStr.c_str());
-    i++;
-    file.readStringUntil('\n');
-  }
-  file.close();
-  file = LittleFS.open("/integra_zones.cfg", "r");  
-  i = 0;
-  while (file.available()) {
-    String numberStr = file.readStringUntil(':');
-    zoneNumbers[i] = atoi(numberStr.c_str());
-    i++;
-    file.readStringUntil('\n');
-  }
-  file.close();
-  file = LittleFS.open("/integra_outputs.cfg", "r");  
-  i = 0;
-  while (file.available()) {
-    String numberStr = file.readStringUntil(':');
-    outputNumbers[i] = atoi(numberStr.c_str());
-    i++;
-    file.readStringUntil('\n');
-  }
-  file.close();
 }
 
 
@@ -194,16 +232,16 @@ void uartInit(void) {
 
 // Forward communication from TCP socket to UART port
 void TCP2COM(uint8_t port) {
-  uint8_t bufOut[BUFFERSIZE];
   if (TCPClient[port]) {
     uint16_t i = 0;
     while (TCPClient[port].available()) {
-      bufOut[i] = TCPClient[port].read();  // read char from client
+      bufOut[port][i] = TCPClient[port].read();  // read char from client
       i++;
       if (i == BUFFERSIZE - 1) break;
     }
     bytesOut[port] += i;
-    COM[port]->write(bufOut, i);  // now send to UART(num): 
+    if (i > (bufOutDepth[port])) bufOutDepth[port] = i;
+    COM[port]->write(bufOut[port], i);  // now send to UART(num): 
   }
 }
 
@@ -211,16 +249,16 @@ void TCP2COM(uint8_t port) {
 // Forward communication from UART port to TCP socket
 // If listen == 1 also intercept and mirror incoming data to rotating buffer for separate processing
 void COM2TCP(uint8_t port, uint8_t listen) {
-  uint8_t bufIn[BUFFERSIZE];
   if (COM[port]->available()) {
-    int readCount = COM[port]->read(&bufIn[0], BUFFERSIZE); 
+    int readCount = COM[port]->read(&bufIn[port][0], BUFFERSIZE); 
     if (readCount > 0) {
-      if (TCPClient[port]) TCPClient[port].write(bufIn, readCount);
+      if (TCPClient[port]) TCPClient[port].write(bufIn[port], readCount);
       bytesIn[port] += readCount;
+      if (readCount > (bufInDepth[port])) bufInDepth[port] = readCount;
       // copy received data into rolling buffer
       if (listen == 1) {
         for (uint16_t i = 0; i < readCount; i++) {
-          rollBuf[port][writePos[port] % BUFFERSIZE] = bufIn[i];
+          rollBuf[port][writePos[port] % BUFFERSIZE] = bufIn[port][i];
           writePos[port]++;
         }
       }
@@ -232,6 +270,7 @@ void COM2TCP(uint8_t port, uint8_t listen) {
 // Handler for incoming connections on TCP sockets
 void connectionHandler(void *pvParameters) {
   while(1) {
+    uint32_t start = millis();
     for (int num = 0; num < 2 ; num++) {
       if (servers[num]->hasClient()) {
         if (TCPClient[num].connected()) {
@@ -242,7 +281,9 @@ void connectionHandler(void *pvParameters) {
         }
       }
     }
-    delay(500);
+    uint32_t time = millis() - start;
+    if (time > connectionhMaxTime) connectionhMaxTime = time;
+    vTaskDelay(xDelay * 5);
   }
 }
 
@@ -250,10 +291,13 @@ void connectionHandler(void *pvParameters) {
 // Handler of UART 1
 void port1Handler(void *pvParameters) {
   while (1) {
+    uint32_t start = millis();
     TCP2COM(0);
     uint8_t listen = port_mirroring & 0x01;
     COM2TCP(0, listen);
-    delay(10);
+    uint32_t time = millis() - start;
+    if (time > port1hMaxTime) port1hMaxTime = time;
+    vTaskDelay(xDelay);
   }
 }
 
@@ -261,16 +305,34 @@ void port1Handler(void *pvParameters) {
 // Handler of UART 2
 void port2Handler(void *pvParameters) {
   while(1) {
+    uint32_t start = millis();
     TCP2COM(1);
     uint8_t listen = (port_mirroring & 0x02) >> 1;
     COM2TCP(1, listen);
-    delay(10);
+    uint32_t time = millis() - start;
+    if (time > port2hMaxTime) port2hMaxTime = time;
+    vTaskDelay(xDelay);
+  }
+}
+
+
+void whatsAppHandler(void *pvParameters) {
+  struct zoneStatusNotification notification;
+  while(1) {
+    uint32_t start = millis();
+    if (xQueueReceive(whatsAppQ, (void *) &notification, 0) == pdPASS) {
+      notifyWhatsApp(notification.zone, notification.newState, notification.oldState);
+    }
+    uint32_t time = millis() - start;
+    if (time > whatsapphMaxTime) whatsapphMaxTime = time;
+    vTaskDelay(xDelay);
   }
 }
 
 
 // Simple linear setup
 void setup() {
+  Serial.begin(115200);
   readEEPROMConfig();
   wifiInit();
   ArduinoOTA.begin();
@@ -284,6 +346,8 @@ void setup() {
   xTaskCreate(port2Handler, "Handling Port 2", 8192, NULL, 1, &port2_h);
   xTaskCreate(connectionHandler, "Handling incoming connections", 8192, NULL, 1, &connections_h);
   xTaskCreate(integraRxHandler, "Handling status updates", 8192, NULL, 1, &status_h);
+  whatsAppQ = xQueueCreate(10, sizeof(zoneStatusNotification));
+  xTaskCreate(whatsAppHandler, "Handling WhatsApp notifications", 8192, NULL, 1, &whatsApp_h);
   sendWhatsAppMessage("TCP2UART restarted.\n");
 }
 
