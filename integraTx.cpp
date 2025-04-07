@@ -4,9 +4,6 @@ const char *hexChars = "0123456789ABCDEF";
 const char *separatorChars = "$ -";
 
 String notificationStr;
-uint8_t payload[13];
-uint8_t payloadSize = 0;  
-uint8_t payloadReady = 0;
 
 
 void handleParamSendFrame(String const &name, String const &value) { 
@@ -15,6 +12,7 @@ void handleParamSendFrame(String const &name, String const &value) {
     const char *input = value.c_str();
     uint8_t inputLength = value.length();
     int8_t hexDigits = validateInput(input, inputLength);
+    char payload[14];
     // if input string is not compliant display error notification and interrupt further processing
     if (hexDigits == -1) {notificationStr = "Not a valid hex!"; return;}
     else if (hexDigits == -2) {notificationStr = "Odd count of digits!"; return;}
@@ -22,52 +20,9 @@ void handleParamSendFrame(String const &name, String const &value) {
     char hexString[hexDigits];
     unSeparate(input, inputLength, hexString);
     // convert input string to array of 8-bit numbers
-    payloadSize = hexDigits / 2;
+    uint8_t payloadSize = hexDigits / 2;
     digitalize(hexString, hexDigits, payload);
-    dispatchFrame();
-  }
-}
-
-
-void handleParamPanel(String const &name, String const &value) {
-  if (name == "mode") {
-    uint8_t mode = value.toInt();
-    if (mode == 1) {
-      payloadSize = 14;
-      payload[0] = 0x70;
-      payload[13] = 0x00;
-    }
-    else if (mode == 0) {
-      payloadSize = 13;
-      payload[0] = 0x71;
-    }
-    else if (mode == 2) {
-      payloadSize = 13;
-      payload[0] = 0x72;
-    }
-    payloadReady++;
-  }
-  if (name == "password") {
-    uint8_t length = value.length();
-    for (uint8_t i = 0; i < 8; i++) {
-      uint8_t c16 = (2 * i < length) ? (value[2 * i] - '0') : (0xA);
-      uint8_t c1 = (2 * i + 1 < length) ? (value[2 * i + 1] - '0') : (0xA);
-      payload[i + 1] = 16 * c16 + c1;
-    }
-    payloadReady++;
-  }
-  if (name == "zone") {
-    uint32_t zone;
-    zone = 1 << (value.toInt());
-    payload[9] = zone & 0XFF;
-    payload[10] = (zone >> 8) & 0xFF;
-    payload[11] = (zone >> 16) & 0xFF;
-    payload[12] = zone >> 24;
-    payloadReady++;
-  }
-  if (payloadReady == 3) {
-    dispatchFrame();
-    payloadReady = 0;
+    dispatchFrame(payload, payloadSize);
   }
 }
 
@@ -92,7 +47,7 @@ uint8_t validateChar(char input) {
 
 
 // calculate CRCs according to the procedure defined in Satel Integra integration protocol
-void calcCRC(uint8_t *payload, uint8_t payloadSize, uint8_t *crc) {
+void calcCRC(char *payload, uint8_t payloadSize, char *crc) {
   crc[0] = 0;
   for (uint8_t i = 0; i < payloadSize; i++) {
     crc[0] = crc[0] ^ payload[i];
@@ -151,7 +106,7 @@ void unSeparate(const char *input, uint8_t length, char *output) {
 
 
 // convert array of ASCII hex digits into array of int numbers
-void digitalize(const char *input, uint8_t length, uint8_t *output) {
+void digitalize(const char *input, uint8_t length, char *output) {
   for (uint8_t i = 0; i < length; i++) {
     char temp[3];
     temp[0] = input[2 * i];
@@ -163,12 +118,12 @@ void digitalize(const char *input, uint8_t length, uint8_t *output) {
 
 
 // build frame to send, dispatch it and provide notification
-void dispatchFrame(void) {
+void dispatchFrame(char *payload, uint8_t payloadSize) {
   extern TaskHandle_t port1_h;
   extern HardwareSerial* COM[2];
   extern WiFiClient TCPClient[2];
   uint8_t frameSize = payloadSize + 9;
-  uint8_t frame[frameSize];
+  char frame[frameSize];
   frame[0] = 0xFF;
   frame[1] = 0xFF;
   for (uint8_t i = 0; i < payloadSize; i++) {

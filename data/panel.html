@@ -11,57 +11,6 @@
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<script>
-	var gateway = `ws://${window.location.hostname}/ws`;
-	var websocket;
-	window.addEventListener('load', onLoad);
-
-	function initWebSocket() 
-	{
-		console.log('Trying to open a WebSocket connection...');
-		websocket = new WebSocket(gateway);
-		websocket.onopen    = onOpen;
-		websocket.onclose   = onClose;
-		websocket.onmessage = onMessage;
-	}
-
-	function initButton() 
-	{
-		document.getElementById('button').addEventListener('click', toggle);
-	}
-
-	function onOpen(event) 
-	{
-		console.log('Connection opened');
-	}
-
-	function onClose(event) 
-	{
-		console.log('Connection closed');
-		setTimeout(initWebSocket, 2000);
-	}
-
-	function onMessage(event) 
-	{
-		const arguments = event.data.split(":");
-		console.log(event.data);
-		if (document.getElementById(arguments[0])) 
-		{
-			document.getElementById(arguments[0]).innerText = arguments[1].trim();
-		}
-	}
-	
-	function toggle()
-	{
-		console.log('Sending');
-		websocket.send('toggle');
-	}
-  
-	function onLoad(event) 
-	{
-		initWebSocket();
-	}
-</script>
 <table class="outertable">
 	<tr>
 		<td class="outertd">
@@ -71,27 +20,26 @@
 					<td class="silenttd"><a href="/stats">STATS</a></td>
 					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
 				</tr>
-			</table>
+			</table><br/>
+			<h4>UPTIME: %UPTIME%</h4>
 		</td>
 	</tr>
 	<tr>
 		<td class="outertd">
 			<h4>Uzbrojenie i rozbrojenie</h4>
-			<form action = "/panelget">
-				<label for="mode">Akcja: </label><br/>
-				<select id="mode" name="mode">
-					<option value="1">Uzbroj</option>
-					<option value="0">Rozbroj</option>
-					<option value="2">Wyczysc alarm</option>
-				</select><br/><br/>
-				<label for="zone">Strefa: </label><br/>
-				<select id="zone" name="zone">
-					%ZONESFORM%
-				</select><br/><br/>
-				<label for="password">Password: </label><br/>
-				<input type="number" step="1" id="password" name="password" size="10" maxlength="16"><br/><br/><br/>
-				<input type="submit" value="Submit" id="button"><br/>
-			</form><br/>
+			<label for="mode">Akcja: </label><br/>
+			<select id="mode" name="mode">
+				<option value="1">Uzbroj</option>
+				<option value="0">Rozbroj</option>
+				<option value="2">Wyczysc alarm</option>
+			</select><br/><br/>
+			<label for="zone">Strefa: </label><br/>
+			<select id="zone" name="zone">
+				%ZONESFORM%
+			</select><br/><br/>
+			<label for="password">Password: </label><br/>
+			<input type="number" step="1" id="password" name="password" size="10" maxlength="16"><br/><br/>
+			<button id="button" class="button">Do it!</button><br/>
 		</td>
 	</tr>
 	<tr>
@@ -143,5 +91,55 @@
 		</td>
 	</tr>
 </table>
+<script>
+	var gateway = `ws://${window.location.hostname}/ws`;
+	var websocket;
+	window.addEventListener('load', onLoad);
+
+	function onLoad(event) {
+		initWebSocket();
+		initButton();
+	}
+
+	function initWebSocket() {
+		console.log('Trying to open a WebSocket connection...');
+		websocket = new WebSocket(gateway);
+		websocket.onopen    = onOpen;
+		websocket.onclose   = onClose;
+		websocket.onmessage = onMessage;
+	}
+
+	function initButton() {
+		document.getElementById('button').addEventListener('click', update);
+	}
+
+	function onOpen(event) {
+		console.log('Connection opened');
+	}
+
+	function onClose(event) {
+		console.log('Connection closed');
+		setTimeout(initWebSocket, 2000);
+	}
+ 
+	function onMessage(event) {
+		const arguments = event.data.split(":");
+		console.log(event.data);
+		if (document.getElementById(arguments[0])) {
+			document.getElementById(arguments[0]).innerText = arguments[1].trim();
+		}
+	}
+	
+	function update() {	
+		var mode;
+		var zone;
+		var password;
+		mode = document.getElementById('mode').value;
+		zone = document.getElementById('zone').value;
+		password = document.getElementById('password').value;
+		websocket.send(mode + zone + password);
+	}
+  
+</script>
 </body>
 </html>

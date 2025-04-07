@@ -119,3 +119,21 @@ a:link, a:visited {
 a:hover, a:active {
 	background-color: #8080FF;
 }
+
+.button {
+	padding: 5px;
+	font-size: 12px;
+	text-align: center;
+	outline: none;
+	color: black;
+	background-color: #BAC8F5;; //green
+	border: #8080FF;
+	border-radius: 4px;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}

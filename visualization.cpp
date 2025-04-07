@@ -40,15 +40,16 @@ extern uint32_t whatsapphMaxTime;
 String processorIntegra(const String & var) {
   char type = var[0];
   if (var == "TABLEINPUTS") return generateStatesTable('i', numInputs, sizeof(inputFrameCodes), inputsNames, inputsStates);
-  if (var == "TABLEZONES") return generateStatesTable('z', numZones, sizeof(zoneFrameCodes), zonesNames, zonesStates);
-  if (var == "TABLEOUTPUTS") return generateStatesTable('o', numOutputs, sizeof(outputFrameCodes), outputsNames, outputsStates);
-  if (var == "ZONESFORM") {
+  else if (var == "TABLEZONES") return generateStatesTable('z', numZones, sizeof(zoneFrameCodes), zonesNames, zonesStates);
+  else if (var == "TABLEOUTPUTS") return generateStatesTable('o', numOutputs, sizeof(outputFrameCodes), outputsNames, outputsStates);
+  else if (var == "UPTIME") return upTime();
+  else if (var == "ZONESFORM") {
     uint16_t arraySize = 50 * numZones;
     char * output = (char *) malloc(arraySize * sizeof(char));
     uint16_t index = 0;
     for (uint8_t zone = 0; zone < numZones; zone++) {
       strcpy(output + index, "\n<option value=\"");
-      index += 15;
+      index += 16;
       sprintf(output + index, "%.2d", zonesNumbers[zone]);
       index += 2;
       strcpy(output + index, "\">");

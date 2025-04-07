@@ -14,7 +14,6 @@ void webServerInit(void) {
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){request->send(LittleFS, "/style.css", "text/css");});
   server.on("/settingsget", HTTP_GET, [](AsyncWebServerRequest *request){handleGetSettings(request);});
   server.on("/sendframeget", HTTP_GET, [](AsyncWebServerRequest *request){handleGetSendFrame(request);});
-  server.on("/panelget", HTTP_GET, [](AsyncWebServerRequest *request){handleGetPanel(request);});
   server.onNotFound(notFound);
   server.begin();
 }
@@ -28,19 +27,6 @@ void handleGetSendFrame(AsyncWebServerRequest *request) {
     handleParamSendFrame(p->name().c_str(), p->value().c_str());
   }
   request->redirect("/sendframe");
-}
-
-
-// Handle GET request from panel.html
-void handleGetPanel(AsyncWebServerRequest *request) {
-  extern uint8_t payloadReady;
-  payloadReady = 0;
-  int params = request->params();
-  for(int i = 0; i < params; i++) {
-    const AsyncWebParameter* p = request->getParam(i);
-    handleParamPanel(p->name().c_str(), p->value().c_str());
-  }
-  request->redirect("/panel");
 }
 
 
@@ -69,11 +55,46 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     case WS_EVT_DISCONNECT:
       break;
     case WS_EVT_DATA:
-      //handleWebSocketMessage(arg, data, len);
+      handleWebSocketMessage(arg, data, len);
       break;
     case WS_EVT_PONG:
     case WS_EVT_ERROR:
       break;
+  }
+}
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+    char payload[14];
+    uint8_t payloadSize = 0;
+    uint8_t mode = *data - '0';
+    if (mode == 1) {
+      payloadSize = 14;
+      payload[0] = 0x70;
+      payload[13] = 0x00;
+    }
+    else if (mode == 0) {
+      payloadSize = 13;
+      payload[0] = 0x71;
+    }
+    else if (mode == 2) {
+      payloadSize = 13;
+      payload[0] = 0x72;
+    }
+    // Convert 2 character decimal number to a 32-bit register indicating zone number
+    uint32_t zone = 1 << ((*(data + 1) - '0') * 10 + (*(data + 2) - '0'));
+    payload[9] = zone & 0XFF;
+    payload[10] = (zone >> 8) & 0xFF;
+    payload[11] = (zone >> 16) & 0xFF;
+    payload[12] = zone >> 24;
+    // Convert password from array of decimal chars into string compliant with Satel protocol
+    for (uint8_t i = 0; i < 8; i++) {
+      uint8_t c16 = (2 * i < len - 3) ? (*(data + 2 * i + 3) - '0') : (0xA);
+      uint8_t c1 = (2 * i + 1 < len - 3) ? (*(data + 2 * i + 4) - '0') : (0xA);
+      payload[i + 1] = 16 * c16 + c1;
+    }
+    dispatchFrame(payload, payloadSize);
   }
 }
 

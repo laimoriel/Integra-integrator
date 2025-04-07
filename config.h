@@ -56,10 +56,10 @@ void COM2TCP(uint8_t, uint8_t);
 void webServerInit(void);
 void handleGetSettings(AsyncWebServerRequest *);
 void handleGetSendFrame(AsyncWebServerRequest *);
-void handleGetPanel(AsyncWebServerRequest *);
 void handleParamSettings(String const &, String const &);
 void notFound(AsyncWebServerRequest *);
 void onEvent(AsyncWebSocket *, AsyncWebSocketClient *, AwsEventType, void *, uint8_t *, size_t);
+void handleWebSocketMessage(void *, uint8_t *, size_t);
 
 // Receive and decode frames from Integra
 void integraRxHandler(void *);
@@ -73,9 +73,9 @@ void handleParamPanel(String const &, String const &);
 uint8_t validateChar(char); 
 int8_t validateInput(const char *, uint8_t);
 void unSeparate(const char *, uint8_t, char *);
-void digitalize(const char *, uint8_t, uint8_t *);
-void calcCRC(uint8_t *, uint8_t, uint8_t *);
-void dispatchFrame(void);
+void digitalize(const char *, uint8_t, char *);
+void calcCRC(char *, uint8_t, char *);
+void dispatchFrame(char *, uint8_t);
 
 // Visualization and notifications
 String upTime(void);

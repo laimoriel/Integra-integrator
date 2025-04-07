@@ -21,19 +21,8 @@
 					<td class="silenttd"><a href="/stats">STATS</a></td>
 					<td class="silenttd"><a href="/settings">SETTINGS</a></td>
 				</tr>
-			</table>
-		</td>
-	</tr>
-	<tr>
-		<td  class="outertd">
+			</table><br/>
 			<h4>UPTIME: %UPTIME%</h4>
-			<table class="innertable">
-				<tr><th colspan="2">HEAP</th></tr>
-				<tr><th>Total</th><td>%HEAPSIZE%</td></tr>
-				<tr><th>Free</th><td>%HEAP%</td></tr>
-				<tr><th>Watermark</th><td>%HEAPLOW%</td></tr>
-				<tr><th>Max alloc</th><td>%HEAPALLOC%</td></tr>
-			</table>
 		</td>
 	</tr>
 	<tr>
@@ -48,20 +37,6 @@
 			</table>
 		</td>
 	</tr>
-	<tr>
-		<td class="outertd">
-			<h4>Max processing times</h4>
-			<table class="innertable">
-				<tr><th colspan="2">Times</th></tr>
-				<tr><th>Port 1 handler</th><td>%PORT1HMAXTIME%</td></tr>
-				<tr><th>Port 2 handler</th><td>%PORT2HMAXTIME%</td></tr>
-				<tr><th>Connection handler</th><td>%CONNECTIONHMAXTIME%</td></tr>
-				<tr><th>Integra RX handler</th><td>%INTEGRARXHMAXTIME%</td></tr>
-				<tr><th>WhatsApp handler</th><td>%WHATSAPPHMAXTIME%</td></tr>
-			</table>
-		</td>
-	</tr>
-
 	<tr>
 		<td  class="outertd">
 			<h4>Received input frames</h4>
@@ -92,6 +67,30 @@
 			<table class="innertable">%INPUTS%</table>
 			<table class="innertable">%ZONES%</table>
 			<table class="innertable">%OUTPUTS%</table>
+		</td>
+	</tr>
+	<tr>
+		<td  class="outertd">
+			<table class="innertable">
+				<tr><th colspan="2">HEAP</th></tr>
+				<tr><th>Total</th><td>%HEAPSIZE%</td></tr>
+				<tr><th>Free</th><td>%HEAP%</td></tr>
+				<tr><th>Watermark</th><td>%HEAPLOW%</td></tr>
+				<tr><th>Max alloc</th><td>%HEAPALLOC%</td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td class="outertd">
+			<h4>Max processing times</h4>
+			<table class="innertable">
+				<tr><th colspan="2">Times</th></tr>
+				<tr><th>Port 1 handler</th><td>%PORT1HMAXTIME%</td></tr>
+				<tr><th>Port 2 handler</th><td>%PORT2HMAXTIME%</td></tr>
+				<tr><th>Connection handler</th><td>%CONNECTIONHMAXTIME%</td></tr>
+				<tr><th>Integra RX handler</th><td>%INTEGRARXHMAXTIME%</td></tr>
+				<tr><th>WhatsApp handler</th><td>%WHATSAPPHMAXTIME%</td></tr>
+			</table>
 		</td>
 	</tr>
 </table>

@@ -93,6 +93,7 @@ void findFrame(uint8_t port) {
   }
 }
 
+
 // Extract a frame from buf starting from pos but do not exceed maxFrameSize
 // Simply read & copy bytes until we encounter another FF - marker of frame end (usually also start of next).
 // The first byte of returned frame will contain number of bytes in the frame
@@ -116,7 +117,6 @@ uint8_t extractFrame(uint8_t * frame, uint8_t maxFrameSize, uint8_t * inputBuffe
   *readPos += rcvBytes;
   return 2;
 }
-
 
 
 // After receiving a relevant frame we need to update variables which hold states of inputs/zones/outputs
