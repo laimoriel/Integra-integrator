@@ -26,6 +26,7 @@ extern uint32_t writePos[2];
 
 const uint8_t * frameCodes[3] = {inputFrameCodes, zoneFrameCodes, outputFrameCodes};
 
+
 // Handler looking for incoming frames in the rotating buffer intercepted from selected UART port
 void integraRxHandler(void *pvParameters) {
   extern uint32_t readPos[2];
@@ -75,13 +76,22 @@ void findFrame(uint8_t port) {
           // Now we want to recognize if the frame contains data about inputs, zones or outputs
           // We do it by matching frame code to corresponding lists of known & interesting frame codes of each particular type
           for (uint8_t k = 0; k < sizeof(inputFrameCodes); k++) {
-            if (rcvFrame[1] == inputFrameCodes[k]) updateStates(k, 0, &rcvFrame[2], numInputs, inputsStates, inputsNumbers, inputFramesCtr);  
+            if (rcvFrame[1] == inputFrameCodes[k]) {
+                updateStates(k, 'i', &rcvFrame[2], numInputs, inputsStates, inputsNumbers);  
+                inputFramesCtr[k]++;
+              }
             }
           for (uint8_t k = 0; k < sizeof(zoneFrameCodes); k++) {
-            if (rcvFrame[1] == zoneFrameCodes[k]) updateStates(k, 1, &rcvFrame[2], numZones, zonesStates, zonesNumbers, zoneFramesCtr);
+            if (rcvFrame[1] == zoneFrameCodes[k]) {
+              updateStates(k, 'z', &rcvFrame[2], numZones, zonesStates, zonesNumbers);
+              zoneFramesCtr[k]++;
+            }
           }
           for (uint8_t k = 0; k < sizeof(outputFrameCodes); k++) {
-            if ((rcvFrame[1] == outputFrameCodes[k]) && (rcvFrame[2] == 0)) updateStates(k, 2, &rcvFrame[3], numOutputs, outputsStates, outputsNumbers, outputFramesCtr); 
+            if ((rcvFrame[1] == outputFrameCodes[k]) && (rcvFrame[2] == 0)) {
+              updateStates(k, 'o', &rcvFrame[3], numOutputs, outputsStates, outputsNumbers); 
+              outputFramesCtr[k]++;
+            }
           }
         }
       }
@@ -140,9 +150,13 @@ uint8_t extractFrame(uint8_t * frame, uint8_t maxFrameSize, uint8_t * inputBuffe
 // State of outputs, bits:
 // 0 0x01 - on/off (frame code 0x1C)
 // That's the function with most parameters in the code and I'm particularly proud of it as it's as universal as only possible
-void updateStates(uint8_t codeNum, char type, uint8_t * frame, uint8_t numObjects, uint8_t * objStates, uint8_t * objNumbers, uint32_t * frameCtrs) {
+void updateStates(uint8_t codeNum, char type, uint8_t * frame, uint8_t numObjects, uint8_t * objStates, uint8_t * objNumbers) {
   extern QueueHandle_t whatsAppQ;
-  struct zoneStatusNotification notification;
+  extern QueueHandle_t websocketQ;
+  struct zoneStatusNotification notifWhatsApp;
+  char notifWebSocket[7];
+  char status;
+  uint8_t change = 0;
   uint32_t framePayload = frame[0] + (frame[1] << 8) + (frame[2] << 16) + (frame[3] << 24);
   // Iterate through all inputs/zones/outputs
   for (uint8_t objNum = 0; objNum < numObjects; objNum++) {
@@ -154,17 +168,20 @@ void updateStates(uint8_t codeNum, char type, uint8_t * frame, uint8_t numObject
     uint8_t newState = objStates[objNum] & (~(0x01 << codeNum));
     newState |= (((framePayload >> objNumbers[objNum]) & 0x01) << codeNum);
     if (newState != oldState) {
+      uint8_t change = oldState ^ newState;
       objStates[objNum] = newState;
-      refreshStates(objNum, codeNum, type, newState);
-      if (type == 1) {
-        notification.zone = objNum;
-        notification.oldState = oldState;
-        notification.newState = newState;
-        xQueueSend(whatsAppQ, (void *) &notification, 0);
+      if (((newState >> codeNum ) & 0x01) != 0) status = '#'; else status = ' ';
+      sprintf(notifWebSocket, "%c%.2d%d:%c\0", type, objNum, codeNum, status);
+      xQueueSend(websocketQ, (void *) &notifWebSocket, 0);
+      if (((type == 'z') && ((change & 0x01) != 0)) || ((type == 'i') && ((change & 0x3C) != 0))) { 
+        notifWhatsApp.type = type;
+        notifWhatsApp.objNum = objNum;
+        notifWhatsApp.newState = newState;
+        notifWhatsApp.change = change;
+        xQueueSend(whatsAppQ, (void *) &notifWhatsApp, 0);
       }
     }
   }
-  frameCtrs[codeNum]++;
 }
 
 

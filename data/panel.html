@@ -39,7 +39,7 @@
 			</select><br/><br/>
 			<label for="password">Password: </label><br/>
 			<input type="number" step="1" id="password" name="password" size="10" maxlength="16"><br/><br/>
-			<button id="button" class="button">Do it!</button><br/>
+			<button id="button" class="button">Not connected!</button><br/>
 		</td>
 	</tr>
 	<tr>
@@ -115,10 +115,12 @@
 
 	function onOpen(event) {
 		console.log('Connection opened');
+		document.getElementById('button').innerText = 'Do it!';
 	}
 
 	function onClose(event) {
 		console.log('Connection closed');
+		document.getElementById('button').innerText = 'Not connected!';
 		setTimeout(initWebSocket, 2000);
 	}
  
@@ -137,7 +139,13 @@
 		mode = document.getElementById('mode').value;
 		zone = document.getElementById('zone').value;
 		password = document.getElementById('password').value;
-		websocket.send(mode + zone + password);
+		if (websocket.readyState !== WebSocket.CLOSED) {
+			websocket.send(mode + zone + password);
+			console.log('Sending '+ mode + zone + password);
+		}
+		else {
+			console.log('Cannot send, not connected.');
+		}			
 	}
   
 </script>

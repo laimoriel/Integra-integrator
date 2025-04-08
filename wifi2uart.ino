@@ -49,6 +49,9 @@ TaskHandle_t connections_h = NULL;
 TaskHandle_t status_h = NULL;
 TaskHandle_t whatsApp_h = NULL;
 QueueHandle_t whatsAppQ;
+TaskHandle_t websocket_h = NULL;
+QueueHandle_t websocketQ;
+
 
 // Numbers of the inputs/zones/outputs being monitored
 uint8_t * inputsNumbers;
@@ -80,6 +83,7 @@ uint32_t port2hMaxTime = 0;
 uint32_t connectionhMaxTime = 0;
 uint32_t integrarxhMaxTime = 0;
 uint32_t whatsapphMaxTime = 0;
+uint32_t websocketMaxTime = 0;
 
 // Self explanatory
 void readEEPROMConfig(void) {
@@ -321,10 +325,25 @@ void whatsAppHandler(void *pvParameters) {
   while(1) {
     uint32_t start = millis();
     if (xQueueReceive(whatsAppQ, (void *) &notification, 0) == pdPASS) {
-      notifyWhatsApp(notification.zone, notification.newState, notification.oldState);
+      Serial.printf("Received message from queue\n");
+      notifyWhatsApp(notification.type, notification.objNum, notification.newState, notification.change);
     }
     uint32_t time = millis() - start;
     if (time > whatsapphMaxTime) whatsapphMaxTime = time;
+    vTaskDelay(xDelay);
+  }
+}
+
+
+void websocketHandler(void *pvParameters) {
+  char notification[7];
+  while(1) {
+    uint32_t start = millis();
+    if (xQueueReceive(websocketQ, (void *) &notification, 0) == pdPASS) {
+      notifyClients(String(notification));
+    }
+    uint32_t time = millis() - start;
+    if (time > websocketMaxTime) websocketMaxTime = time;
     vTaskDelay(xDelay);
   }
 }
@@ -342,12 +361,14 @@ void setup() {
   uartInit();
   LittleFS.begin();
   tablesInit();
-  xTaskCreate(port1Handler, "Handling Port 1", 8192, NULL, 1, &port1_h);
-  xTaskCreate(port2Handler, "Handling Port 2", 8192, NULL, 1, &port2_h);
-  xTaskCreate(connectionHandler, "Handling incoming connections", 8192, NULL, 1, &connections_h);
+  xTaskCreate(port1Handler, "Handling Port 1", 4096, NULL, 1, &port1_h);
+  xTaskCreate(port2Handler, "Handling Port 2", 4096, NULL, 1, &port2_h);
+  xTaskCreate(connectionHandler, "Handling incoming connections", 4096, NULL, 1, &connections_h);
   xTaskCreate(integraRxHandler, "Handling status updates", 8192, NULL, 1, &status_h);
   whatsAppQ = xQueueCreate(10, sizeof(zoneStatusNotification));
   xTaskCreate(whatsAppHandler, "Handling WhatsApp notifications", 8192, NULL, 1, &whatsApp_h);
+  websocketQ = xQueueCreate(10, 7 * sizeof(char));
+  xTaskCreate(websocketHandler, "Handling communication over websocket", 8192, NULL, 1, &websocket_h);
   sendWhatsAppMessage("TCP2UART restarted.\n");
 }
 

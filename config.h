@@ -19,9 +19,10 @@
 #define EEPROM_SSID_OFFSET 20
 
 struct zoneStatusNotification {
-  uint8_t zone;
+  char type;
+  uint8_t objNum;
   uint8_t newState;
-  uint8_t oldState;
+  uint8_t change;
 };
 
 // Define codes of the incoming frames we want to process
@@ -79,10 +80,10 @@ void dispatchFrame(char *, uint8_t);
 
 // Visualization and notifications
 String upTime(void);
-void updateStates(uint8_t, char, uint8_t *, uint8_t, uint8_t *, uint8_t *, uint32_t *);
+void updateStates(uint8_t, char, uint8_t *, uint8_t, uint8_t *, uint8_t *);
 void refreshStates(uint8_t, uint8_t, uint8_t, uint8_t);
 void notifyClients(String);
-void notifyWhatsApp(uint8_t, uint8_t, uint8_t);
+void notifyWhatsApp(char, uint8_t, uint8_t, uint8_t);
 void sendWhatsAppMessage(String);
 String processorIntegra(const String &);
 String processorSettings(const String &);
